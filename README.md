@@ -64,7 +64,7 @@ export async function getTransactions(
   lockScript: ScriptObject,
   lastCursor?: string
 ) {
-  let transactions = await CKB.getTransactions(lockScript);
+  let transactions = await CKB.getTransactions(lockScript,lastCursor);
   return transactions
 }
 ```
