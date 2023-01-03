@@ -32,9 +32,10 @@ export default {
 3.如果有注入就可以验证授权关联
 ```js
 const CKB = require("../wallet/getCKB");
+let lockScript;
 CKB.enable().then((res) => {
     // 关联后获取账号信息，比如账号地址
-    const lockScript = res
+    lockScript = res
 })}
 ```
 
