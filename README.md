@@ -30,10 +30,15 @@ export default {
 ```
 
 3.如果有注入就可以验证授权关联
-```js
+```ts
+interface ScriptObject {
+  code_hash: string;
+  hash_type: string;
+  args: string;
+}
 const CKB = require("../wallet/getCKB");
-let lockScript;
-CKB.enable().then((res) => {
+let lockScript:ScriptObject;
+CKB.enable().then((res:ScriptObject) => {
     // 关联后获取账号信息，比如账号地址
     lockScript = res
 })}
@@ -41,12 +46,6 @@ CKB.enable().then((res) => {
 
 4.获取金额，交易数据
 ```ts
-interface ScriptObject {
-  code_hash: string;
-  hash_type: string;
-  args: string;
-}
-
 // 获取金额
 async function capacityOf(lockScript: ScriptObject): Promise<BI> {
   let balance = BI.from(0);
