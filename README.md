@@ -63,7 +63,7 @@ export async function getTransactions(
   script: ScriptObject,
   lastCursor?: string
 ) {
-  let transactions = await CKB.getCells(lockScript);
+  let transactions = await CKB.getTransactions(lockScript);
   return transactions
 }
 ```
