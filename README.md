@@ -61,7 +61,7 @@ async function capacityOf(lockScript: ScriptObject): Promise<BI> {
 
 // 获取交易数据
 export async function getTransactions(
-  script: ScriptObject,
+  lockScript: ScriptObject,
   lastCursor?: string
 ) {
   let transactions = await CKB.getTransactions(lockScript);
