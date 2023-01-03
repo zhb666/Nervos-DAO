@@ -39,8 +39,8 @@ interface ScriptObject {
 const CKB = require("../wallet/getCKB");
 let lockScript:ScriptObject;
 CKB.enable().then((res:ScriptObject) => {
-  // 关联后获取账号信息，比如账号地址
-   await lockScript =  CKB.Keyring.getUnusedLocks()
+    // 关联后获取账号信息，比如账号地址
+    lockScript = res
 })}
 ```
 
