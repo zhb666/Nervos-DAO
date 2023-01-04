@@ -53,7 +53,7 @@ async function capacityOf(): Promise<BI> {
 
   let cells = await CkbProvider.bip44.getLiveCells();
 
-  for await (const cell of cells.objects) {
+  for (const cell of cells.objects) {
     balance = balance.add(cell.cell_output.capacity);
   }
   return balance;
@@ -70,12 +70,22 @@ export async function getUnusedLocks(
 
 5.Dao需要和插件交互的话需要调用ckb注入的对象的方法去质押然后等待返回结果，这个时候页面会有一个等待的过程。
 ```ts
-const RPC_NETWORK = await CkbProvider.getNetworkName()
+import { sealTransaction } from "@ckb-lumos/helpers";
+
+export enum FeeRate {
+  SLOW = 1000,
+  NORMAL = 100000,
+  FAST = 10000000
+}
+
+const NETWORK = await CkbProvider.getNetworkName()
+
+let RPC_NETWORK = NETWORK == "ckb" ? "https://mainnet.ckb.dev/" : "https://testnet.ckb.dev/"
 
 async function deposit(
   amount: bigint,
   from: string,
-  feeRate: FeeRate = 100000
+  feeRate: FeeRate.SLOW
 ): Promise<string> {
   if (amount < DAOCELLSIZE) {
     throw new Error("Minimum deposit value is 102 CKB");
@@ -87,6 +97,7 @@ async function deposit(
     config: RPC_NETWORK
   });
 
+  // 动态计算最小矿工费
   tx = await common.payFeeByFeeRate(
     tx,
     [from],
@@ -95,7 +106,13 @@ async function deposit(
     { config: RPC_NETWORK }
   );
 
-  return CkbProvider.bip44.signTransaction({tx});
+  const tx = await CkbProvider.bip44.signTransaction({tx});
+
+  const tx = sealTransaction(tx);
+
+  const hash = await sendTransaction(tx);
+
+  return hash;
 }
 
 
