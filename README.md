@@ -31,7 +31,7 @@ export default {
 ```ts
 const CKB = require("../wallet/getCKB");
 
-let CkbProvider:CkbProvider;
+let CkbProvider;
 CKB.enable().then((res:CkbProvider) => {
     // 关联后获取CkbProvider
     CkbProvider = res
@@ -51,7 +51,7 @@ interface ScriptObject {
 async function capacityOf(): Promise<BI> {
   let balance = BI.from(0);
 
-  let cells = await CkbProvider.bip44.getLiveCells(lockScript);
+  let cells = await CkbProvider.bip44.getLiveCells();
 
   for await (const cell of cells.objects) {
     balance = balance.add(cell.cell_output.capacity);
@@ -63,7 +63,7 @@ async function capacityOf(): Promise<BI> {
 export async function getUnusedLocks(
   cursor?: string
 ) {
-  let unUsedLocks:ScriptObject = await CKB.getUnusedLocks({cursor});
+  let unUsedLocks:ScriptObject = await CkbProvider.bip44.getUnusedLocks({cursor});
   return unUsedLocks
 }
 ```
@@ -95,7 +95,7 @@ async function deposit(
     { config: RPC_NETWORK }
   );
 
-  return CkbProvider.signTransaction({tx});
+  return CkbProvider.bip44.signTransaction({tx});
 }
 
 
