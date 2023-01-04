@@ -9,10 +9,8 @@ const getCKB = () =>
     // 页面加载完成
     window.addEventListener("load", async () => {
       if (window.ckb) {
-        const provider = "http://127.0.0.1:9545";
-        const CKB = new ckb(provider || 'ckb_testnet');
+        const CKB = new ckb();
         try {
-          
           resolve(CKB);
         } catch (error) {
           reject(error);
@@ -31,26 +29,26 @@ export default {
 
 3.如果有注入就可以验证授权关联
 ```ts
+const CKB = require("../wallet/getCKB");
 interface ScriptObject {
   code_hash: string;
   hash_type: string;
   args: string;
 }
-const CKB = require("../wallet/getCKB");
-let lockScript:ScriptObject;
-CKB.enable().then((res:ScriptObject) => {
-    // 关联后获取账号信息，比如账号地址
-    lockScript = res
+let CkbProvider:CkbProvider;
+CKB.enable().then((res:CkbProvider) => {
+    // 关联后获取CkbProvider
+    CkbProvider = res
 })}
 ```
 
 4.获取金额，交易数据
 ```ts
 // 获取金额
-async function capacityOf(lockScript: ScriptObject): Promise<BI> {
+async function capacityOf(): Promise<BI> {
   let balance = BI.from(0);
 
-  let cells = await CKB.getCells(lockScript);
+  let cells = await CkbProvider.bip44.getLiveCells(lockScript);
 
   for await (const cell of cells.objects) {
     balance = balance.add(cell.cell_output.capacity);
@@ -59,18 +57,46 @@ async function capacityOf(lockScript: ScriptObject): Promise<BI> {
 }
 
 // 获取交易数据
-export async function getTransactions(
-  lockScript: ScriptObject,
-  lastCursor?: string
+export async function getUsedLocks(
+  cursor?: string
 ) {
-  let transactions = await CKB.getTransactions(lockScript,lastCursor);
-  return transactions
+  let usedLocks = await CKB.getUsedLocks({cursor});
+  return usedLocks
 }
 ```
 
 5.Dao需要和插件交互的话需要调用ckb注入的对象的方法去质押然后等待返回结果，这个时候页面会有一个等待的过程。
 ```ts
-const txhash = await CKB.deposit(BigInt(amount * 10 ** 8));
+const RPC_NETWORK = await CkbProvider.getNetworkName()
+
+async function deposit(
+  amount: bigint,
+  from: string,
+  feeRate: FeeRate = 100000
+): Promise<string> {
+  if (amount < DAOCELLSIZE) {
+    throw new Error("Minimum deposit value is 102 CKB");
+  }
+
+  let tx = getTransactionSkeleton();
+
+  tx = await dao.deposit(tx, from, to, amount, {
+    config: RPC_NETWORK
+  });
+
+  tx = await common.payFeeByFeeRate(
+    tx,
+    [from],
+    feeRate,
+    undefined,
+    { config: RPC_NETWORK }
+  );
+
+  return CkbProvider.signTransaction({tx});
+}
+
+
+const txhash = await deposit(BigInt(amount * 10 ** 8),from);
 
 // 得到交易结果
 if (txhash) {
@@ -85,8 +111,8 @@ if (txhash) {
 6.成功或者失败之后需要重新请求ckb注入的方法获取最新的金额，交易，然后更新页面
 
 ```js
-const balance = await capacityOf(lockScript);
-const transactions = await getTransactions(lockScript);
+const balance = await capacityOf();
+const usedLocks = await getUsedLocks();
 
 ```
 
