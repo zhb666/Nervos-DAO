@@ -30,11 +30,7 @@ export default {
 3.如果有注入就可以验证授权关联
 ```ts
 const CKB = require("../wallet/getCKB");
-interface ScriptObject {
-  code_hash: string;
-  hash_type: string;
-  args: string;
-}
+
 let CkbProvider:CkbProvider;
 CKB.enable().then((res:CkbProvider) => {
     // 关联后获取CkbProvider
