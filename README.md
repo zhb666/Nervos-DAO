@@ -71,6 +71,8 @@ export async function getUnusedLocks(
 5.Dao需要和插件交互的话需要调用ckb注入的对象的方法去质押然后等待返回结果，这个时候页面会有一个等待的过程。
 ```ts
 import { sealTransaction } from "@ckb-lumos/helpers";
+import { config } from "@ckb-lumos/lumos";
+const { AGGRON4, LINA } = config.predefined;
 
 export enum FeeRate {
   SLOW = 1000,
@@ -80,7 +82,9 @@ export enum FeeRate {
 
 const NETWORK = await CkbProvider.getNetworkName()
 
-let RPC_NETWORK = NETWORK == "ckb" ? "https://mainnet.ckb.dev/" : "https://testnet.ckb.dev/"
+let NETWORKHTTP = NETWORK == "ckb" ? "https://mainnet.ckb.dev/" : "https://testnet.ckb.dev/"
+
+let RPC_NETWORK = NETWORK == "ckb" ? LINA : AGGRON4
 
 async function deposit(
   amount: bigint,
