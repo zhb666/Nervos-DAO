@@ -38,8 +38,15 @@ CKB.enable().then((res:CkbProvider) => {
 })}
 ```
 
-4.获取金额，交易数据
+4.获取金额
 ```ts
+
+interface ScriptObject {
+  code_hash: string;
+  hash_type: string;
+  args: string;
+}
+
 // 获取金额
 async function capacityOf(): Promise<BI> {
   let balance = BI.from(0);
@@ -52,12 +59,12 @@ async function capacityOf(): Promise<BI> {
   return balance;
 }
 
-// 获取交易数据
-export async function getUsedLocks(
+// 获取未使用Script
+export async function getUnusedLocks(
   cursor?: string
 ) {
-  let usedLocks = await CKB.getUsedLocks({cursor});
-  return usedLocks
+  let unUsedLocks:ScriptObject = await CKB.getUnusedLocks({cursor});
+  return unUsedLocks
 }
 ```
 
@@ -92,7 +99,7 @@ async function deposit(
 }
 
 
-const txhash = await deposit(BigInt(amount * 10 ** 8),from);
+const txhash = await deposit(BigInt(amount * 10 ** 8),unUsedLocks);
 
 // 得到交易结果
 if (txhash) {
@@ -109,7 +116,6 @@ if (txhash) {
 ```js
 const balance = await capacityOf();
 const usedLocks = await getUsedLocks();
-
 ```
 
 
