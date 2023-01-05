@@ -95,14 +95,14 @@ async function deposit(
     throw new Error("Minimum deposit value is 102 CKB");
   }
 
-  let tx = getTransactionSkeleton();
+  let rawTx = getTransactionSkeleton();
 
-  tx = await dao.deposit(tx, from, to, amount, {
+  rawTx = await dao.deposit(tx, from, to, amount, {
     config: RPC_NETWORK
   });
 
   // 动态计算最小矿工费
-  tx = await common.payFeeByFeeRate(
+  rawTx = await common.payFeeByFeeRate(
     tx,
     [from],
     feeRate,
@@ -110,12 +110,19 @@ async function deposit(
     { config: RPC_NETWORK }
   );
 
-  const tx = await CkbProvider.bip44.signTransaction({tx});
 
-  const tx = sealTransaction(tx);
+  const currentSignature = await CkbProvider.bip44.signTransaction({rawTx});
+  signature.push(currentSignature)
+
+  const tx = sealTransaction(tx,signature);
 
   const hash = await sendTransaction(tx);
 
+  return hash;
+}
+
+async function sendTransaction(tx: Transaction) {
+  const hash = await send_Transaction(tx);
   return hash;
 }
 
