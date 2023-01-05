@@ -71,7 +71,7 @@ export async function getUnusedLocks(
 5.Dao需要和插件交互的话需要调用ckb注入的对象的方法去质押然后等待返回结果，这个时候页面会有一个等待的过程。
 ```ts
 import { sealTransaction } from "@ckb-lumos/helpers";
-import { config,commons, hd } from "@ckb-lumos/lumos";
+import { config, commons, hd } from "@ckb-lumos/lumos";
 const { AGGRON4, LINA } = config.predefined;
 
 export enum FeeRate {
@@ -97,7 +97,7 @@ async function deposit(
 
   let rawTx = getTransactionSkeleton();
 
-  rawTx = await dao.deposit(tx, from, to, amount, {
+  rawTx = await dao.deposit(rawTx, from, to, amount, {
     config: RPC_NETWORK
   });
 
@@ -110,6 +110,7 @@ async function deposit(
     { config: RPC_NETWORK }
   );
 
+  const signatures = [];
   const currentSignature = await CkbProvider.bip44.signTransaction({rawTx});
   signature.push(currentSignature)
 
