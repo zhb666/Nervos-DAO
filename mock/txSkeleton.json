@@ -1,0 +1,98 @@
+{
+    "cellProvider": {
+        "indexer": {
+            "medianTimeEmitters": [],
+            "emitters": [],
+            "isSubscribeRunning": false,
+            "ckbIndexerUrl": "https://testnet.ckb.dev/indexer",
+            "ckbRpcUrl": "https://testnet.ckb.dev/rpc",
+            "uri": "https://testnet.ckb.dev/rpc",
+            "ckbIndexerUri": "https://testnet.ckb.dev/indexer"
+        },
+        "myQueryOptions": {
+            "lock": {
+                "codeHash": "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
+                "hashType": "type",
+                "args": "0x5989ae415bb667931a99896e5fbbfad9ba53a223"
+            },
+            "type": "empty"
+        },
+        "uri": "https://testnet.ckb.dev/rpc"
+    },
+    "cellDeps": [
+        {
+            "outPoint": {
+                "txHash": "0x8f8c79eb6671709633fe6a46de93c0fedc9c1b8a6527a18d3983879542635c9f",
+                "index": "0x2"
+            },
+            "depType": "code"
+        },
+        {
+            "outPoint": {
+                "txHash": "0xf8de3bb47d055cdf460d93a2a6e1b05f7432f9777c8c474abf4eec1d4aee5d37",
+                "index": "0x0"
+            },
+            "depType": "depGroup"
+        }
+    ],
+    "headerDeps": [],
+    "inputs": [
+        {
+            "cellOutput": {
+                "capacity": "0x77e8544dbe",
+                "lock": {
+                    "args": "0x5989ae415bb667931a99896e5fbbfad9ba53a223",
+                    "codeHash": "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
+                    "hashType": "type"
+                },
+                "type": null
+            },
+            "data": "0x",
+            "outPoint": {
+                "index": "0x1",
+                "txHash": "0x5b139b3d60f4c7c94a7af1cfe2110b736f0e5cb815f4aa027bf0d18f50490f47"
+            },
+            "blockNumber": "0x79c9ae"
+        }
+    ],
+    "outputs": [
+        {
+            "cellOutput": {
+                "capacity": "0x3dd6fe600",
+                "lock": {
+                    "codeHash": "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
+                    "hashType": "type",
+                    "args": "0x5989ae415bb667931a99896e5fbbfad9ba53a223"
+                },
+                "type": {
+                    "codeHash": "0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e",
+                    "hashType": "type",
+                    "args": "0x"
+                }
+            },
+            "data": "0x0000000000000000"
+        },
+        {
+            "cellOutput": {
+                "capacity": "0x740ae4658c",
+                "lock": {
+                    "codeHash": "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
+                    "hashType": "type",
+                    "args": "0x5989ae415bb667931a99896e5fbbfad9ba53a223"
+                }
+            },
+            "data": "0x"
+        }
+    ],
+    "witnesses": [
+        "0x55000000100000005500000055000000410000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    ],
+    "fixedEntries": [
+        {
+            "field": "outputs",
+            "index": 0
+        }
+    ],
+    "signingEntries": [],
+    "inputSinces": {}
+}

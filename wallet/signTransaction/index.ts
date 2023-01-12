@@ -1,12 +1,35 @@
-import { sealTransaction, TransactionSkeletonType } from "@ckb-lumos/helpers";
-import { commons, hd, Transaction } from "@ckb-lumos/lumos";
-import { RPC_NETWORK } from "../../config";
+import { sealTransaction, TransactionSkeletonType,LiveCellFetcher,createTransactionSkeleton } from "@ckb-lumos/helpers";
+import { commons, hd, OutPoint, Transaction } from "@ckb-lumos/lumos";
+import { RPC_NETWORK ,privateKey} from "../../config";
+const txSkeleton = require("../../mock/txSkeleton.json");
 
 export async function signTransaction(
-  txSkeleton: TransactionSkeletonType,
-  privateKeys: string[]
+  transaction: Transaction,
 ): Promise<Transaction> {
-  const txSkeletonWEntries = commons.common.prepareSigningEntries(txSkeleton, {
+  const txSkeletonObject: TransactionSkeletonType = txSkeleton
+  const privateKeys: string[] = [privateKey]
+
+  const mockFetcher: LiveCellFetcher = (outPoint) =>
+    txSkeletonObject.inputs.find(
+      (input) =>
+        input.outPoint?.txHash === outPoint.txHash &&
+        input.outPoint?.index === outPoint.index
+    ) ?? {
+      outPoint,
+      cellOutput: {
+        capacity: "0x",
+        lock: {
+          codeHash: "0x",
+          args: "0x",
+          hashType: "type",
+        },
+      },
+      data: "0x",
+    };
+
+  const checkedTxSkeleton = await createTransactionSkeleton(transaction, mockFetcher);
+
+  const txSkeletonWEntries = commons.common.prepareSigningEntries(checkedTxSkeleton, {
     config: RPC_NETWORK
   });
 

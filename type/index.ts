@@ -1,11 +1,3 @@
-export interface FinalDataObject {
-  amount: any;
-  timestamp: string;
-  hash: string;
-  type: string;
-  state: string;
-  blockHeight: number | string;
-}
 export interface TransactionObject {
   block_number: string;
   io_index: string;
@@ -56,13 +48,6 @@ interface Celldep {
 interface Outpoint {
   index: string;
   tx_hash: string;
-}
-
-export interface WalletListObject {
-  m: string;
-  privateKey: string;
-  privateKeyAgs: PrivateKeyAgs;
-  type: string;
 }
 
 interface PrivateKeyAgs {

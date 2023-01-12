@@ -1,9 +1,11 @@
 import { dao, common } from "@ckb-lumos/common-scripts";
-import { DAOCELLSIZE, RPC_NETWORK,privateKey,address } from "../../config";
+import { createTransactionFromSkeleton ,createTransactionSkeleton} from "@ckb-lumos/helpers";
+import { DAOCELLSIZE, RPC_NETWORK,address } from "../../config";
 import { FeeRate } from "../../type";
 import { getTransactionSkeleton } from "../customCellProvider";
 import owership from '../../owership';
 import { sendTransaction } from '../sendTransaction';
+import { json } from 'stream/consumers';
 
 export async function deposit(
   amount: bigint,
@@ -18,8 +20,6 @@ export async function deposit(
 
   let txSkeleton = getTransactionSkeleton(await owership.getUnusedLocks());
 
-  console.log(txSkeleton,"txSkeleton____");
-
   txSkeleton = await dao.deposit(txSkeleton, from, to, amount, {
     config: RPC_NETWORK
   });
@@ -31,7 +31,13 @@ export async function deposit(
     undefined,
     { config: RPC_NETWORK }
   );
-  const tx = await owership.signTransaction(txSkeleton, [privateKey]);
+
+  // console.log(JSON.stringify(txSkeleton))
+  // return ""
+
+  const transaction = createTransactionFromSkeleton(txSkeleton);
+
+  const tx = await owership.signTransaction(transaction);
 
   return sendTransaction(tx);
 }
