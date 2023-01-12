@@ -8,9 +8,9 @@ async function capacity() {
 }
 
 async function deposit() {
-  const txhash = await daoDeposit(BigInt(186 * 10 ** 8), 1000);
+  const txhash = await daoDeposit(BigInt(188 * 10 ** 8), 1000);
   console.log(txhash);
 }
 
 capacity();
-deposit()
+deposit();
