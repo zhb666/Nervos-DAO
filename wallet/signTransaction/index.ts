@@ -1,13 +1,18 @@
-import { sealTransaction, TransactionSkeletonType,LiveCellFetcher,createTransactionSkeleton } from "@ckb-lumos/helpers";
-import { commons, hd, OutPoint, Transaction } from "@ckb-lumos/lumos";
+import { sealTransaction,TransactionSkeletonType,LiveCellFetcher,createTransactionSkeleton } from "@ckb-lumos/helpers";
+import { commons, hd, OutPoint, Script, Transaction } from "@ckb-lumos/lumos";
+import { log } from 'console';
 import { RPC_NETWORK ,privateKey} from "../../config";
+import owership from '../../owership';
+import { GroupedSignature, Signature } from '../../type';
 const txSkeleton = require("../../mock/txSkeleton.json");
+
 
 export async function signTransaction(
   transaction: Transaction,
-): Promise<Transaction> {
+): Promise<GroupedSignature> {
   const txSkeletonObject: TransactionSkeletonType = txSkeleton
   const privateKeys: string[] = [privateKey]
+  const script = await owership.getUnusedLocks()
 
   const mockFetcher: LiveCellFetcher = (outPoint) =>
     txSkeletonObject.inputs.find(
@@ -38,13 +43,18 @@ export async function signTransaction(
     throw new Error("Invalid private keys length");
   }
 
-  const signatures = [];
+  const signatures:Signature = "";
+  // const signatures = [];
   for (let i = 0; i < privateKeys.length; i += 1) {
     const entry = txSkeletonWEntries.get("signingEntries").get(i);
     // @ts-ignore
-    signatures.push(hd.key.signRecoverable(entry.message, privateKeys[i]));
+    // signatures.push(hd.key.signRecoverable(entry.message, privateKeys[i]));
+    signatures = (hd.key.signRecoverable(entry.message, privateKeys[i]));
   }
-  const tx = sealTransaction(txSkeletonWEntries, signatures);
 
-  return tx
+  return [[script,signatures]]
+ 
+  // const tx = sealTransaction(txSkeletonWEntries, signatures);
+  // return tx
+
 }

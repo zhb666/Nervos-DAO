@@ -39,7 +39,7 @@
     "inputs": [
         {
             "cellOutput": {
-                "capacity": "0x77e8544dbe",
+                "capacity": "0x740ae4658c",
                 "lock": {
                     "args": "0x5989ae415bb667931a99896e5fbbfad9ba53a223",
                     "codeHash": "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
@@ -50,9 +50,9 @@
             "data": "0x",
             "outPoint": {
                 "index": "0x1",
-                "txHash": "0x5b139b3d60f4c7c94a7af1cfe2110b736f0e5cb815f4aa027bf0d18f50490f47"
+                "txHash": "0x51925a1af28afa91771c9f367e7febab36cf6e29c8900acc5c7b624009bbd930"
             },
-            "blockNumber": "0x79c9ae"
+            "blockNumber": "0x79e226"
         }
     ],
     "outputs": [
@@ -74,7 +74,7 @@
         },
         {
             "cellOutput": {
-                "capacity": "0x740ae4658c",
+                "capacity": "0x702d747d5a",
                 "lock": {
                     "codeHash": "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
                     "hashType": "type",

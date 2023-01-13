@@ -1,3 +1,5 @@
+import { Script } from '@ckb-lumos/lumos';
+
 export interface TransactionObject {
   block_number: string;
   io_index: string;
@@ -97,3 +99,6 @@ export enum FeeRate {
   NORMAL = 100000,
   FAST = 10000000
 }
+
+export type GroupedSignature = [Script, Signature][];
+export type Signature = string;

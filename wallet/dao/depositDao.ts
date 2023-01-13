@@ -1,11 +1,12 @@
 import { dao, common } from "@ckb-lumos/common-scripts";
-import { createTransactionFromSkeleton ,createTransactionSkeleton} from "@ckb-lumos/helpers";
+import { createTransactionFromSkeleton ,sealTransaction} from "@ckb-lumos/helpers";
 import { DAOCELLSIZE, RPC_NETWORK,address } from "../../config";
 import { FeeRate } from "../../type";
 import { getTransactionSkeleton } from "../customCellProvider";
 import owership from '../../owership';
 import { sendTransaction } from '../sendTransaction';
 import { json } from 'stream/consumers';
+import { commons } from '@ckb-lumos/lumos';
 
 export async function deposit(
   amount: bigint,
@@ -35,9 +36,15 @@ export async function deposit(
   // console.log(JSON.stringify(txSkeleton))
   // return ""
 
+  const txSkeletonWEntries = commons.common.prepareSigningEntries(txSkeleton, {
+    config: RPC_NETWORK
+  });
+
   const transaction = createTransactionFromSkeleton(txSkeleton);
 
-  const tx = await owership.signTransaction(transaction);
+  const groupedSignature = await owership.signTransaction(transaction);
+
+  const tx = sealTransaction(txSkeletonWEntries, [groupedSignature[0][1]]);
 
   return sendTransaction(tx);
 }
