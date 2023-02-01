@@ -100,5 +100,7 @@ export enum FeeRate {
   FAST = 10000000
 }
 
+// @ts-ignore
 export type GroupedSignature = [Script, Signature][];
+// export type GroupedSignature = any
 export type Signature = string;

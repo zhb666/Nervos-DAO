@@ -43,7 +43,7 @@ export async function signTransaction(
     throw new Error("Invalid private keys length");
   }
 
-  const signatures:Signature = "";
+  let signatures:Signature = "";
   // const signatures = [];
   for (let i = 0; i < privateKeys.length; i += 1) {
     const entry = txSkeletonWEntries.get("signingEntries").get(i);

@@ -5,7 +5,7 @@ import { FeeRate } from "../../type";
 import { getTransactionSkeleton } from "../customCellProvider";
 import owership from '../../owership';
 import { sendTransaction } from '../sendTransaction';
-import { json } from 'stream/consumers';
+// import { json } from 'stream/consumers';
 import { commons } from '@ckb-lumos/lumos';
 
 export async function deposit(
