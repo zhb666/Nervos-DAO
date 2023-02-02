@@ -16,7 +16,8 @@
     "typescript": "^4.9.5",
     "@ckb-lumos/lumos": "0.20.0-alpha.1",
     "@ant-design/icons": "^4.7.0",
-    "antd": "^4.20.7"
+    "antd": "^4.20.7",
+    "hox": "^1.1.2"
   },
   "scripts": {
     "start": "react-scripts start",
