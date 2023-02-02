@@ -1,7 +1,7 @@
 .mian {
     width: 70%;
     height: auto;
-    padding: 20px;
+    padding: 80px 20px 20px 20px;
     box-sizing: border-box;
     margin: auto;
     overflow: hidden;
@@ -18,7 +18,7 @@ li {
 }
 
 input {
-    margin: 0px 0 10px 0;
+    margin: 20px 0 10px 0;
 }
 
 .Table {
@@ -32,6 +32,11 @@ input {
 
 .sendButton {
     margin-top: 30px;
+}
+
+.txHash {
+    font-size: 16px;
+    margin-top: 20px;
 }
 
 /* .tips{

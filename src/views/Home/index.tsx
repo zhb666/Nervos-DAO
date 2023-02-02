@@ -15,7 +15,7 @@ const Home: React.FC = () => {
     const [fromLock, setFromLock] = useState<Script>();
     const [balance, setBalance] = useState("");
     const [amount, setAmount] = useState<any>("");
-    const [txHash, setTxHash] = useState<any>("");
+    const [txHash, setTxHash] = useState<any>("11111");
 
     const deposit = async () => {
         const txhash = await daoDeposit(BigInt(166 * 10 ** 8), 1000);
@@ -41,9 +41,6 @@ const Home: React.FC = () => {
     }, [privKey]);
 
     return (
-        // <div>Home
-        //     <Button type="primary" onClick={deposit}>Button</Button>
-        // </div>
         <div className='mian'>
             <h3>Account</h3>
             <ul className='address'>
@@ -63,7 +60,7 @@ const Home: React.FC = () => {
             <Button className='sendButton' type="primary" block onClick={deposit}>
                 Deposit
             </Button>
-            {txHash ? <p>txHash : {txHash}</p> : null}
+            {txHash ? <p className='txHash'>Transaction Hash : <a href="">{txHash}</a></p> : null}
 
             {/* {
                 off ?
