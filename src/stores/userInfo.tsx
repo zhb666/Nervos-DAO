@@ -13,6 +13,7 @@ function useCounter() {
   }
 
   return {
+    addWalletList,
     connectWallet,
   };
 }
