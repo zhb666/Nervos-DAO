@@ -1,6 +1,6 @@
 import { Script } from '@ckb-lumos/lumos'
 
-const cells ={
+const cells = {
     "objects": [
         {
             "cell_output": {
@@ -424,7 +424,28 @@ const cells ={
         },
         {
             "cell_output": {
-                "capacity": "0x4b048db892",
+                "capacity": "0x4a221e700",
+                "lock": {
+                    "args": "0x5989ae415bb667931a99896e5fbbfad9ba53a223",
+                    "code_hash": "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
+                    "hash_type": "type"
+                },
+                "type": {
+                    "args": "0x",
+                    "code_hash": "0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e",
+                    "hash_type": "type"
+                }
+            },
+            "data": "0x0000000000000000",
+            "out_point": {
+                "index": "0x0",
+                "tx_hash": "0xcec6eb39e9e55681b7be62172baabcef2bb8888ce4f7efc272d64993ce54c542"
+            },
+            "block_number": "0x7d5ceb"
+        },
+        {
+            "cell_output": {
+                "capacity": "0x46626bcf60",
                 "lock": {
                     "args": "0x5989ae415bb667931a99896e5fbbfad9ba53a223",
                     "code_hash": "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
@@ -435,12 +456,12 @@ const cells ={
             "data": "0x",
             "out_point": {
                 "index": "0x1",
-                "tx_hash": "0xb85d6cc592ced46f5b3049ae34004d3c690cb5fc553cefe993c2bfd2d14876b1"
+                "tx_hash": "0xcec6eb39e9e55681b7be62172baabcef2bb8888ce4f7efc272d64993ce54c542"
             },
-            "block_number": "0x7d4749"
+            "block_number": "0x7d5ceb"
         }
     ],
-    "lastCursor": "0x209bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8015989ae415bb667931a99896e5fbbfad9ba53a22300000000007d47490000000700000001"
+    "lastCursor": "0x209bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8015989ae415bb667931a99896e5fbbfad9ba53a22300000000007d5ceb0000000900000001"
 }
 
 const script:Script = {

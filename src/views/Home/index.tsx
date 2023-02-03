@@ -68,8 +68,8 @@ const Home: React.FC = () => {
         <div className='mian'>
             <h3>Account</h3>
             <ul className='address'>
-                <li>Address :  {connectWallet ? cutValue(fromAddr, 20, 20) : "Please connect nexus wallet"}</li>
-                <li>Total CKB : {connectWallet ? Number(balance) / 100000000 : "Please connect nexus wallet"}</li>
+                <li>Address :  {connectWallet ? cutValue(fromAddr, 20, 20) : "Please connect Nexus Wallet"}</li>
+                <li>Total CKB : {connectWallet ? Number(balance) / 100000000 : "Please connect Nexus Wallet"}</li>
             </ul>
             <h3 className='h3'>Amount </h3>
             <Input
