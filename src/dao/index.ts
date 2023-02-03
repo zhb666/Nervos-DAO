@@ -1,4 +1,3 @@
-import { browserUrl } from '../config';
 import { capacityOf, deposit as daoDeposit } from "../wallet";
 
 

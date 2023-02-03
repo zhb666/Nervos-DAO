@@ -16,8 +16,10 @@ export async function signTransaction(
   const privateKeys: string[] = [privateKey]
   const script = await owership.getUnusedLocks()
 
+  // @ts-ignore
   const mockFetcher: LiveCellFetcher = (outPoint: { txHash: string; index: any; }) =>
     txSkeletonObject.inputs.find(
+  // @ts-ignore
       (input: { outPoint: { txHash: string; index: string; }; }) =>
         input.outPoint?.txHash === outPoint.txHash &&
         input.outPoint?.index === outPoint.index
