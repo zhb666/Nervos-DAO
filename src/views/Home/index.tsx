@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Script } from '@ckb-lumos/lumos';
-import { Button, Input } from 'antd';
+import { Button, Input, notification } from 'antd';
 import { capacityOf, deposit as daoDeposit } from "../../wallet";
 
 import "./index.css";
 import { cutValue } from '../../utils';
-import { address, privateKey } from '../../config';
+import { address, DAOCELLSIZE, privateKey, BROWSERURL } from '../../config';
 import { UserStore } from "../../stores";
 import { minus } from '../../utils/bigNumber';
 
@@ -18,10 +18,32 @@ const Home: React.FC = () => {
     const [balance, setBalance] = useState("");
     const [amount, setAmount] = useState<any>("");
     const [txHash, setTxHash] = useState<any>("");
+    const [loading, setLoading] = useState<boolean>(false);
 
-    const deposit = async () => {
-        const txhash = await daoDeposit(BigInt(166 * 10 ** 8), 1000);
-        setTxHash(setTxHash)
+    const Deposit = async () => {
+
+        let msg = ""
+        if (!amount) {
+            msg = "Deposit ckb cannot be 0"
+        }
+
+        if (BigInt(amount * 10 ** 8) < DAOCELLSIZE) {
+            msg = "Minimum cannot be less than 102 CKB"
+        }
+
+        if (msg) {
+            notification["error"]({
+                message: 'error',
+                description: msg
+            });
+            return
+        }
+
+        setLoading(true)
+
+        const txhash = await daoDeposit(BigInt(amount * 10 ** 8), 1000);
+        setLoading(false)
+        setTxHash(txhash)
         console.log(txhash);
     }
 
@@ -66,12 +88,12 @@ const Home: React.FC = () => {
                         addWalletList(true)
                     }}>
                         Connect Wallet
-                    </Button> : <Button className='sendButton' disabled={!connectWallet} type="primary" block onClick={deposit}>
+                    </Button> : <Button className='sendButton' disabled={loading} type="primary" block onClick={Deposit}>
                         Deposit
                     </Button>
             }
 
-            {txHash ? <p className='txHash'>Transaction Hash : <a href="">{txHash}</a></p> : null}
+            {txHash ? <p className='txHash'>Transaction Hash : <a target="_blank" href={`${BROWSERURL.test}/transaction/${txHash}`}>{txHash}</a></p> : null}
 
 
             <div className="Table">

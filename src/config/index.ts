@@ -6,7 +6,7 @@ interface BrowserUrl {
   mian: string;
 }
 
-const browserUrl: BrowserUrl = {
+const BROWSERURL : BrowserUrl = {
   test: "https://pudge.explorer.nervos.org",
   mian: "https://explorer.nervos.org"
 };
@@ -38,7 +38,7 @@ export {
   DEPOSITDAODATA,
   TRANSFERCELLSIZE,
   HTTPRPC,
-  browserUrl,
+  BROWSERURL,
   privateKey,
   address
 };

@@ -33,6 +33,7 @@ export async function deposit(
     { config: RPC_NETWORK }
   );
 
+  const localStorage = await window.localStorage.setItem("txSkeleton", JSON.stringify(txSkeleton))
   // console.log(JSON.stringify(txSkeleton))
   // return ""
 

@@ -4,12 +4,14 @@ import { log } from 'console';
 import { RPC_NETWORK ,privateKey} from "../../config";
 import owership from '../../owership';
 import { GroupedSignature, Signature } from '../../type';
-const txSkeleton = require("../../mock/txSkeleton.json");
+// const txSkeleton = require("../../mock/txSkeleton.json");
 
 
 export async function signTransaction(
   transaction: Transaction,
 ): Promise<GroupedSignature> {
+  // @ts-ignore
+  const txSkeleton:TransactionSkeletonType = JSON.parse(window.localStorage.getItem('txSkeleton'))
   const txSkeletonObject: TransactionSkeletonType = txSkeleton
   const privateKeys: string[] = [privateKey]
   const script = await owership.getUnusedLocks()
