@@ -8,6 +8,7 @@ import { cutValue } from '../../utils';
 import { address, DAOCELLSIZE, privateKey, BROWSERURL } from '../../config';
 import { UserStore } from "../../stores";
 import { minus } from '../../utils/bigNumber';
+import Table from '../../components/DaoTable'
 
 const Home: React.FC = () => {
     const UserStoreHox = UserStore();
@@ -19,6 +20,7 @@ const Home: React.FC = () => {
     const [amount, setAmount] = useState<any>("");
     const [txHash, setTxHash] = useState<any>("");
     const [loading, setLoading] = useState<boolean>(false);
+    const [off, setOff] = useState(true);//pending = false  success = true
 
     const Deposit = async () => {
 
@@ -43,6 +45,7 @@ const Home: React.FC = () => {
 
         const txhash = await daoDeposit(BigInt(amount * 10 ** 8), 1000);
         setLoading(false)
+        setOff(false)
         setTxHash(txhash)
         console.log(txhash);
     }
@@ -97,7 +100,7 @@ const Home: React.FC = () => {
 
 
             <div className="Table">
-                {/* <Table item={txHash} off={off} /> */}
+                <Table item={txHash} off={off} />
             </div>
         </div>
     )

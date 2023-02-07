@@ -3,6 +3,7 @@ import { signTransaction } from "./signTransaction";
 import { sendTransaction } from "./sendTransaction";
 import {
   deposit,
+  getUnlockableAmountsFromCells,
 } from "./dao";
 
 import { ScriptObject } from "../type";
@@ -41,5 +42,6 @@ export {
   capacityOf,
   sendTransaction,
   deposit,
-  cellOccupiedBytes
+  cellOccupiedBytes,
+  getUnlockableAmountsFromCells
 };
