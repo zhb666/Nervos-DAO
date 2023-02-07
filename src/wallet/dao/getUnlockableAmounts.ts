@@ -209,3 +209,95 @@ export async function getWithdrawDaoEarliestSince(
   );
 }
 
+export async function getUnlockableAmountsFromCells(
+  cells: Cell[]
+): Promise<DAOUnlockableAmount[]> {
+  const unlockableAmounts: DAOUnlockableAmount[] = [];
+  const filtCells = await filterDAOCells(cells);
+
+
+  const currentBlockHeader = await getCurrentBlockHeader();
+
+
+  const currentEpoch = since.parseEpoch(currentBlockHeader.epoch);
+
+
+  for (let i = 0; i < filtCells.length; i += 1) {
+    const unlockableAmount: DAOUnlockableAmount = {
+      amount: BigInt(filtCells[i].cell_output.capacity),
+      compensation: BigInt(0),
+      unlockable: true,
+      remainingCycleMinutes: 0,
+      type: "withdraw",
+      // @ts-ignore
+      txHash: filtCells[i].out_point.tx_hash,
+      remainingEpochs: 0
+    };
+
+    let maxWithdraw = BigInt(0);
+    let earliestSince: since.EpochSinceValue;
+
+    if (isCellDeposit(filtCells[i])) {
+      unlockableAmount.type = "deposit";
+      maxWithdraw = BigInt(66603419616);
+      // maxWithdraw = await getDepositCellMaximumWithdraw(filtCells[i]);
+
+      const sinceBI = await getDepositDaoEarliestSince(filtCells[i]);
+      earliestSince = since.parseAbsoluteEpochSince(sinceBI.toString());
+    } else {
+      maxWithdraw = BigInt(66603419616);
+      // maxWithdraw = await getWithdrawCellMaximumWithdraw(filtCells[i]);
+
+      const sinceBI = await getWithdrawDaoEarliestSince(filtCells[i]);
+      earliestSince = since.parseAbsoluteEpochSince(sinceBI.toString());
+    }
+
+
+
+    const remainingEpochs = earliestSince.number - currentEpoch.number;
+    unlockableAmount.compensation = maxWithdraw - unlockableAmount.amount;
+
+    if (remainingEpochs === 0) {
+      unlockableAmount.remainingEpochs = 0;
+      const remainingBlocks = earliestSince.index - currentEpoch.index;
+      if (remainingBlocks <= 0) {
+        unlockableAmount.remainingCycleMinutes = 0;
+      } else {
+        unlockableAmount.remainingCycleMinutes =
+          (remainingBlocks * blockTime) / 60;
+      }
+    } else if (remainingEpochs < 0) {
+      unlockableAmount.remainingEpochs = 0;
+      unlockableAmount.remainingCycleMinutes = 0;
+    } else {
+      unlockableAmount.remainingEpochs = remainingEpochs;
+      let remainingBlocks = currentEpoch.length - currentEpoch.index;
+      remainingBlocks += (remainingEpochs - 1) * currentEpoch.length;
+      remainingBlocks += earliestSince.index;
+      unlockableAmount.remainingCycleMinutes =
+        (remainingBlocks * blockTime) / 60;
+    }
+    unlockableAmount.unlockable =
+      currentEpoch.number > earliestSince.number ||
+      (currentEpoch.number === earliestSince.number &&
+        currentEpoch.index >= earliestSince.index);
+    unlockableAmounts.push(unlockableAmount);
+  }
+
+  return unlockableAmounts;
+}
+
+// Gets latest block header in the blockchain
+export async function getCurrentBlockHeader(): Promise<Header> {
+  const lastBlockHeader = await HTTPRPC.getTipHeader();
+  return lastBlockHeader;
+}
+
+// Get a block header from its hex number
+export async function getBlockHeaderFromNumber(blockNumber: string): Promise<Header> {
+  if (!blockHeaderNumberMap.has(blockNumber)) {
+    const header = await HTTPRPC.getHeaderByNumber(blockNumber);
+    setBlockHeaderMaps(header);
+  }
+  return blockHeaderNumberMap.get(blockNumber);
+}

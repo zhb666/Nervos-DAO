@@ -5,6 +5,7 @@ import { DaoDataObject } from "../../type"
 import { cutValue, formatDate } from "../../utils/index"
 import { BROWSERURL, HTTPRPC } from "../../config"
 import { UserStore } from "../../stores";
+// import { getUnlockableAmountsFromCells, withdrawOrUnlock } from "../../wallet"
 import { getUnlockableAmountsFromCells } from "../../wallet"
 
 import './index.css';
@@ -36,19 +37,38 @@ const TransactionsTable: React.FC<Props> = ({
 	const [txHash, setTxHash] = useState<string>("");//pending = false  success = true
 
 	const columns: ColumnsType<DaoDataObject> = [
+		// {
+		// 	title: 'Date',
+		// 	dataIndex: 'timestamp',
+		// 	key: 'timestamp',
+		// align: 'center',
+		// },
 		{
 			title: 'Amount',
 			dataIndex: 'amount',
 			key: 'amount',
+			align: 'center',
 			render: (_, record) => (
 				<Space size="middle">
 					{Number(record.amount) / 100000000}
 				</Space>
 			),
 		},
+		// {
+		// 	title: 'Income',
+		// 	dataIndex: 'compensation',
+		// 	key: 'compensation',
+		// align: 'center',
+		// 	render: (_, record) => (
+		// 		<Space size="middle">
+		// 			{Number(record.compensation) < 99.9 ? 0 : Number(record.compensation) / 100000000}
+		// 		</Space>
+		// 	),
+		// },
 		{
 			title: 'View Transaction',
 			key: 'tx_index',
+			align: 'center',
 			render: (_, record) => (
 				<Space size="middle" onClick={() => {
 					getHash(record.txHash)
@@ -61,11 +81,26 @@ const TransactionsTable: React.FC<Props> = ({
 			title: 'Type',
 			dataIndex: 'type',
 			key: 'type',
+			align: 'center'
 		},
 		{
 			title: 'State',
 			dataIndex: 'state',
 			key: 'state',
+			align: 'center'
+		},
+		{
+			title: 'Action',
+			align: 'center',
+			render: (_, record) => (
+				<div>
+					{record.type === "deposit" ? <Button className='actionButton' disabled={record.state === "pending"} onClick={() => {
+						withdraw(record)
+					}}>withdraw</Button> : <Button className='actionButton' onClick={() => {
+						withdraw(record)
+					}} disabled={!record.unlockable} >unlock</Button>}
+				</div>
+			),
 		},
 	];
 
@@ -74,6 +109,24 @@ const TransactionsTable: React.FC<Props> = ({
 		window.open(`${BROWSERURL.test}/transaction/${txHash}`)
 	}
 
+	const withdraw = async (daoData: DaoDataObject) => {
+
+		// @ts-ignore
+		// const hash = await withdrawOrUnlock(daoData, privateKeyAgs.address, privateKey, privateKeyAgs.lockScript);
+
+		// if (hash) {
+		// 	notification["success"]({
+		// 		message: 'success',
+		// 		description:
+		// 			"success transaction",
+		// 	});
+		// };
+
+		// setTxHash(hash)
+		// setLoading(true)
+	}
+
+	// Judge whether the transaction is success
 	useEffect(() => {
 		if (txHash) {
 			timer = setInterval(async () => {
@@ -113,17 +166,26 @@ const TransactionsTable: React.FC<Props> = ({
 
 		const res = await getUnlockableAmountsFromCells(cells.objects)
 
+		let DaoBalance = 0
+		let Income = 0
+
 		for (let i = 0; i < res.length; i++) {
 			const transaction = await HTTPRPC.getTransaction(res[i].txHash);
 			res[i].state = "success"
+			// res[i].timestamp = formatDate(parseInt(transaction.header.timestamp))
+			DaoBalance += Number(res[i].amount)
+			Income += Number(res[i].compensation)
 		}
 
+		// window.localStorage.setItem("daoData", JSON.stringify(res))
 		setTableData(res.reverse());
 	};
 
 
 	useEffect(() => {
+		// if (UserStoreHox.script.privateKeyAgs) {
 		getTableData()
+		// }
 	}, [])
 
 
