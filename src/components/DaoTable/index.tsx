@@ -3,10 +3,9 @@ import type { ColumnsType } from 'antd/lib/table';
 import { Space, Table, Button, notification, Spin } from 'antd';
 import { DaoDataObject } from "../../type"
 import { cutValue, formatDate } from "../../utils/index"
-import { BROWSERURL, HTTPRPC } from "../../config"
+import { address, BROWSERURL, HTTPRPC, privateKey } from "../../config"
 import { UserStore } from "../../stores";
-// import { getUnlockableAmountsFromCells, withdrawOrUnlock } from "../../wallet"
-import { getUnlockableAmountsFromCells } from "../../wallet"
+import { getUnlockableAmountsFromCells, withdrawOrUnlock } from "../../wallet"
 
 import './index.css';
 import owership from '../../owership';
@@ -31,18 +30,13 @@ const TransactionsTable: React.FC<Props> = ({
 	off
 }) => {
 	const UserStoreHox = UserStore();
-	// const { privateKey, privateKeyAgs } = UserStoreHox.script
+	const { connectWallet } = UserStoreHox;
+	const [fromAddr, setFromAddr] = useState(address);
 	const [tableData, setTableData] = useState<DaoDataObject[]>([])
 	const [loading, setLoading] = useState(false);
 	const [txHash, setTxHash] = useState<string>("");//pending = false  success = true
 
 	const columns: ColumnsType<DaoDataObject> = [
-		// {
-		// 	title: 'Date',
-		// 	dataIndex: 'timestamp',
-		// 	key: 'timestamp',
-		// align: 'center',
-		// },
 		{
 			title: 'Amount',
 			dataIndex: 'amount',
@@ -54,17 +48,6 @@ const TransactionsTable: React.FC<Props> = ({
 				</Space>
 			),
 		},
-		// {
-		// 	title: 'Income',
-		// 	dataIndex: 'compensation',
-		// 	key: 'compensation',
-		// align: 'center',
-		// 	render: (_, record) => (
-		// 		<Space size="middle">
-		// 			{Number(record.compensation) < 99.9 ? 0 : Number(record.compensation) / 100000000}
-		// 		</Space>
-		// 	),
-		// },
 		{
 			title: 'View Transaction',
 			key: 'tx_index',
@@ -113,17 +96,18 @@ const TransactionsTable: React.FC<Props> = ({
 
 		// @ts-ignore
 		// const hash = await withdrawOrUnlock(daoData, privateKeyAgs.address, privateKey, privateKeyAgs.lockScript);
+		const hash = await withdrawOrUnlock(daoData, fromAddr);
 
-		// if (hash) {
-		// 	notification["success"]({
-		// 		message: 'success',
-		// 		description:
-		// 			"success transaction",
-		// 	});
-		// };
+		if (hash) {
+			notification["success"]({
+				message: 'success',
+				description:
+					"success transaction",
+			});
+		};
 
-		// setTxHash(hash)
-		// setLoading(true)
+		setTxHash(hash)
+		setLoading(true)
 	}
 
 	// Judge whether the transaction is success
@@ -162,20 +146,8 @@ const TransactionsTable: React.FC<Props> = ({
 	// get table data
 	const getTableData = async () => {
 		const cells = await owership.getLiveCells();
-		console.log(cells);
 
 		const res = await getUnlockableAmountsFromCells(cells.objects)
-
-		let DaoBalance = 0
-		let Income = 0
-
-		for (let i = 0; i < res.length; i++) {
-			const transaction = await HTTPRPC.getTransaction(res[i].txHash);
-			res[i].state = "success"
-			// res[i].timestamp = formatDate(parseInt(transaction.header.timestamp))
-			DaoBalance += Number(res[i].amount)
-			Income += Number(res[i].compensation)
-		}
 
 		// window.localStorage.setItem("daoData", JSON.stringify(res))
 		setTableData(res.reverse());
@@ -183,24 +155,17 @@ const TransactionsTable: React.FC<Props> = ({
 
 
 	useEffect(() => {
-		// if (UserStoreHox.script.privateKeyAgs) {
-		getTableData()
-		// }
-	}, [])
-
+		if (connectWallet) {
+			getTableData()
+		}
+	}, [connectWallet])
 
 	return (
 		<div className='transactionsTable'>
 			<Spin spinning={loading}>
 				<Table rowKey={record => record.txHash}
-					// onRow={record => {
-					// 	return {
-					// 		onClick: event => { getHash(record) },
-					// 	};
-					// }}
 					columns={columns} dataSource={tableData} />
 			</Spin>
-			{/* <Button onClick={getTableData} className='button' type="primary">next</Button> */}
 		</div>
 	)
 }

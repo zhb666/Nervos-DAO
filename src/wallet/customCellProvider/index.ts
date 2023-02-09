@@ -35,7 +35,7 @@ function getEmptyCellProvider(queryOptions: QueryOptions = {}): CellProvider {
   return getCellProvider({ ...queryOptions, type: "empty" });
 }
 
-function getTransactionSkeleton(lock:Script) {
+function getTransactionSkeleton(lock?:Script) {
   return TransactionSkeleton({
     cellProvider: getEmptyCellProvider({lock})
   });

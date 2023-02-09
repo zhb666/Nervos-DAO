@@ -4,6 +4,7 @@ import { sendTransaction } from "./sendTransaction";
 import {
   deposit,
   getUnlockableAmountsFromCells,
+  withdrawOrUnlock
 } from "./dao";
 
 import { ScriptObject } from "../type";
@@ -43,5 +44,6 @@ export {
   sendTransaction,
   deposit,
   cellOccupiedBytes,
-  getUnlockableAmountsFromCells
+  getUnlockableAmountsFromCells,
+  withdrawOrUnlock
 };

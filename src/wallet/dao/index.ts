@@ -1,5 +1,6 @@
 
 import { deposit } from "./depositDao";
+import { withdrawOrUnlock } from "./unlockFromDao";
 import {
     getUnlockableAmountsFromCells,
     filterDAOCells,
@@ -11,7 +12,10 @@ import {
     getTransactionFromHash,
     getBlockHeaderFromHash
   } from "./getUnlockableAmounts";
-export {deposit,getUnlockableAmountsFromCells,
+export {
+    deposit,
+    withdrawOrUnlock,
+    getUnlockableAmountsFromCells,
     filterDAOCells,
     isCellDeposit,
     getCurrentBlockHeader,
@@ -19,4 +23,5 @@ export {deposit,getUnlockableAmountsFromCells,
     getWithdrawDaoEarliestSince,
     findCorrectInputFromWithdrawCell,
     getTransactionFromHash,
-    getBlockHeaderFromHash}
+    getBlockHeaderFromHash
+}

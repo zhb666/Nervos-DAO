@@ -1,6 +1,5 @@
 import { sealTransaction,TransactionSkeletonType,LiveCellFetcher,createTransactionSkeleton } from "@ckb-lumos/helpers";
 import { commons, hd, OutPoint, Script, Transaction } from "@ckb-lumos/lumos";
-import { log } from 'console';
 import { RPC_NETWORK ,privateKey} from "../../config";
 import owership from '../../owership';
 import { GroupedSignature, Signature } from '../../type';

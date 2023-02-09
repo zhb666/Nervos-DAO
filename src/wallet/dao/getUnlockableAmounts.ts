@@ -147,6 +147,7 @@ async function getWithdrawCellMaximumWithdraw(
 export async function findCorrectInputFromWithdrawCell(
   withdrawCell: Cell
 ): Promise<{ index: string; txHash: string }> {
+  
   const transaction = await getTransactionFromHash(
     // @ts-ignore
     withdrawCell.out_point.tx_hash as string
@@ -155,42 +156,31 @@ export async function findCorrectInputFromWithdrawCell(
   let index: string = "";
   let txHash: string = "";
   for (let i = 0; i < transaction.transaction.inputs.length && !index; i += 1) {
-    const prevOut = transaction.transaction.inputs[i].previous_output;
 
-    const possibleTx = await getTransactionFromHash(prevOut.tx_hash);
-    const output = possibleTx.transaction.outputs[parseInt(prevOut.index, 16)];
-    if (
-      output.type &&
-      output.capacity === withdrawCell.cell_output.capacity &&
-      output.lock.args === withdrawCell.cell_output.lock.args &&
-      output.lock.hash_type === withdrawCell.cell_output.lock.hash_type &&
-      output.lock.code_hash === withdrawCell.cell_output.lock.code_hash &&
-      // @ts-ignore
-      output.type.args === withdrawCell.cell_output.type.args &&
-      // @ts-ignore
-      output.type.hash_type === withdrawCell.cell_output.type.hash_type &&
-      // @ts-ignore
-      output.type.code_hash === withdrawCell.cell_output.type.code_hash
-    ) {
-      index = prevOut.index;
-      txHash = prevOut.tx_hash;
-    }
+    
+    const prevOut = transaction.transaction.inputs[i].previousOutput;
+
+    const possibleTx = await getTransactionFromHash(prevOut.txHash);
+    
+
+    index = prevOut.index;
+    txHash = prevOut.txHash;
   }
 
   return { index, txHash };
 }
-
-// Gets a transaction with status from a hash
-// Useful for when the transaction is still not committed
-// For transactions that fave not finished you should set useMap = false to not receive the same!
 export async function getTransactionFromHash(
   transactionHash: string,
   useMap = true
 ): Promise<any> {
-  if (!useMap || !transactionMap.has(transactionHash)) {
-    const transaction = await HTTPRPC.getTransaction(transactionHash);
-    transactionMap.set(transactionHash, transaction);
+
+  if (transactionHash != "0x" && transactionHash != "") {
+    if (!useMap || !transactionMap.has(transactionHash)  ) {
+      const transaction = await HTTPRPC.getTransaction(transactionHash);
+      transactionMap.set(transactionHash, transaction);
+    }
   }
+  
   return transactionMap.get(transactionHash);
 }
 
@@ -200,11 +190,14 @@ export async function getWithdrawDaoEarliestSince(
   const withdrawBlockHeader = await getBlockHeaderFromHash(
     withdrawCell.block_hash as string
   );
+
   const { txHash } = await findCorrectInputFromWithdrawCell(withdrawCell);
+  
   const depositTransaction = await getTransactionFromHash(txHash);
+  const depositBlockHeader = await getBlockHeaderFromHash(depositTransaction.txStatus.blockHash);
 
   return dao.calculateDaoEarliestSince(
-    depositTransaction.header.epoch,
+    depositBlockHeader.epoch,
     withdrawBlockHeader.epoch
   );
 }
@@ -214,13 +207,8 @@ export async function getUnlockableAmountsFromCells(
 ): Promise<DAOUnlockableAmount[]> {
   const unlockableAmounts: DAOUnlockableAmount[] = [];
   const filtCells = await filterDAOCells(cells);
-
-
   const currentBlockHeader = await getCurrentBlockHeader();
-
-
   const currentEpoch = since.parseEpoch(currentBlockHeader.epoch);
-
 
   for (let i = 0; i < filtCells.length; i += 1) {
     const unlockableAmount: DAOUnlockableAmount = {
@@ -251,8 +239,6 @@ export async function getUnlockableAmountsFromCells(
       const sinceBI = await getWithdrawDaoEarliestSince(filtCells[i]);
       earliestSince = since.parseAbsoluteEpochSince(sinceBI.toString());
     }
-
-
 
     const remainingEpochs = earliestSince.number - currentEpoch.number;
     unlockableAmount.compensation = maxWithdraw - unlockableAmount.amount;
