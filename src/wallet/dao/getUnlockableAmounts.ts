@@ -1,3 +1,4 @@
+import { log } from 'console';
 import { Cell, Script, Header, TransactionWithStatus } from "@ckb-lumos/base";
 import { since } from "@ckb-lumos/lumos";
 import { dao } from "@ckb-lumos/common-scripts";
@@ -22,6 +23,7 @@ export async function getDAOUnlockableAmounts(): Promise<
   DAOUnlockableAmount[]
 > {
   const res = await owership.getLiveCells();
+  // @ts-ignore
   return getUnlockableAmountsFromCells(res.objects);
 }
 
@@ -39,10 +41,10 @@ export async function filterDAOCells(
         continue;
       }
 
-      if (!cell.block_hash && cell.block_number && cell.out_point) {
+      if (!cell.blockHash && cell.blockNumber && cell.outPoint) {
         // const header = await HTTPRPC.getTransaction(cell.out_point.tx_hash);
-        const header = await getBlockHeaderFromNumber(cell.block_number);
-        filteredCells.push({ ...cell, block_hash: header.hash });
+        const header = await getBlockHeaderFromNumber(cell.blockNumber);
+        filteredCells.push({ ...cell, blockHash: header.hash });
         
       } else {
         filteredCells.push(cell);
@@ -59,14 +61,14 @@ export function isCellDeposit(cell: Cell): boolean {
 
 function isCellDAO(cell: Cell): boolean {
   const daoScript = getDAOScript();
-  if (!cell.cell_output.type) {
+  if (!cell.cellOutput.type) {
     return false;
   }
 
-  const { code_hash, hash_type, args } = cell.cell_output.type;
+  const { codeHash, hashType, args } = cell.cellOutput.type;
   return (
-    code_hash === daoScript.code_hash &&
-    hash_type === daoScript.hash_type &&
+    codeHash === daoScript.codeHash &&
+    hashType === daoScript.hashType &&
     args === daoScript.args
   );
 }
@@ -74,9 +76,9 @@ function isCellDAO(cell: Cell): boolean {
 function getDAOScript(): Script {
   // const daoConfig = getConfig().SCRIPTS.DAO;
   return {
-    code_hash:
+    codeHash:
       "0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e",
-    hash_type: "type",
+    hashType: "type",
     args: "0x"
   };
 }
@@ -85,7 +87,7 @@ async function getDepositCellMaximumWithdraw(
   depositCell: Cell
 ): Promise<bigint> {
   const depositBlockHeader = await getBlockHeaderFromHash(
-    depositCell.block_hash as string
+    depositCell.blockHash as string
   );
 
   const withdrawBlockHeader = await getCurrentBlockHeader();
@@ -118,7 +120,7 @@ export async function getDepositDaoEarliestSince(
   depositCell: Cell
 ): Promise<bigint> {
   const depositBlockHeader = await getBlockHeaderFromHash(
-    depositCell.block_hash as string
+    depositCell.blockHash as string
   );
   const withdrawBlockHeader = await getCurrentBlockHeader();
 
@@ -132,7 +134,7 @@ async function getWithdrawCellMaximumWithdraw(
   withdrawCell: Cell
 ): Promise<bigint> {
   const withdrawBlockHeader = await getBlockHeaderFromHash(
-    withdrawCell.block_hash as string
+    withdrawCell.blockHash as string
   );
   const { txHash } = await findCorrectInputFromWithdrawCell(withdrawCell);
   const depositTransaction = await getTransactionFromHash(txHash);
@@ -150,7 +152,7 @@ export async function findCorrectInputFromWithdrawCell(
   
   const transaction = await getTransactionFromHash(
     // @ts-ignore
-    withdrawCell.out_point.tx_hash as string
+    withdrawCell.outPoint.txHash as string
   );
 
   let index: string = "";
@@ -162,13 +164,36 @@ export async function findCorrectInputFromWithdrawCell(
 
     const possibleTx = await getTransactionFromHash(prevOut.txHash);
     
+    const output = possibleTx.transaction.outputs[parseInt(prevOut.index, 16)];
 
     index = prevOut.index;
     txHash = prevOut.txHash;
+    
+    
+    // if (
+    //   output.type &&
+    //   output.capacity === withdrawCell.cell_output.capacity &&
+    //   output.lock.args === withdrawCell.cell_output.lock.args &&
+    //   output.lock.hash_type === withdrawCell.cell_output.lock.hash_type &&
+    //   output.lock.code_hash === withdrawCell.cell_output.lock.code_hash &&
+    //   // @ts-ignore
+    //   output.type.args === withdrawCell.cell_output.type.args &&
+    //   // @ts-ignore
+    //   output.type.hash_type === withdrawCell.cell_output.type.hash_type &&
+    //   // @ts-ignore
+    //   output.type.code_hash === withdrawCell.cell_output.type.code_hash
+    // ) {      
+    //   index = prevOut.index;
+    //   txHash = prevOut.tx_hash;
+    // }
   }
 
   return { index, txHash };
 }
+
+// Gets a transaction with status from a hash
+// Useful for when the transaction is still not committed
+// For transactions that fave not finished you should set useMap = false to not receive the same!
 export async function getTransactionFromHash(
   transactionHash: string,
   useMap = true
@@ -188,7 +213,7 @@ export async function getWithdrawDaoEarliestSince(
   withdrawCell: Cell
 ): Promise<bigint> {
   const withdrawBlockHeader = await getBlockHeaderFromHash(
-    withdrawCell.block_hash as string
+    withdrawCell.blockHash as string
   );
 
   const { txHash } = await findCorrectInputFromWithdrawCell(withdrawCell);
@@ -205,6 +230,8 @@ export async function getWithdrawDaoEarliestSince(
 export async function getUnlockableAmountsFromCells(
   cells: Cell[]
 ): Promise<DAOUnlockableAmount[]> {
+
+  
   const unlockableAmounts: DAOUnlockableAmount[] = [];
   const filtCells = await filterDAOCells(cells);
   const currentBlockHeader = await getCurrentBlockHeader();
@@ -212,13 +239,13 @@ export async function getUnlockableAmountsFromCells(
 
   for (let i = 0; i < filtCells.length; i += 1) {
     const unlockableAmount: DAOUnlockableAmount = {
-      amount: BigInt(filtCells[i].cell_output.capacity),
+      amount: BigInt(filtCells[i].cellOutput.capacity),
       compensation: BigInt(0),
       unlockable: true,
       remainingCycleMinutes: 0,
       type: "withdraw",
       // @ts-ignore
-      txHash: filtCells[i].out_point.tx_hash,
+      txHash: filtCells[i].outPoint.txHash,
       remainingEpochs: 0
     };
 
@@ -239,6 +266,7 @@ export async function getUnlockableAmountsFromCells(
       const sinceBI = await getWithdrawDaoEarliestSince(filtCells[i]);
       earliestSince = since.parseAbsoluteEpochSince(sinceBI.toString());
     }
+
 
     const remainingEpochs = earliestSince.number - currentEpoch.number;
     unlockableAmount.compensation = maxWithdraw - unlockableAmount.amount;
@@ -269,7 +297,6 @@ export async function getUnlockableAmountsFromCells(
         currentEpoch.index >= earliestSince.index);
     unlockableAmounts.push(unlockableAmount);
   }
-
   return unlockableAmounts;
 }
 
@@ -285,5 +312,6 @@ export async function getBlockHeaderFromNumber(blockNumber: string): Promise<Hea
     const header = await HTTPRPC.getHeaderByNumber(blockNumber);
     setBlockHeaderMaps(header);
   }
+  // @ts-ignore
   return blockHeaderNumberMap.get(blockNumber);
 }

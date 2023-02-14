@@ -24,6 +24,7 @@ import { DAOUnlockableAmount, FeeRate } from "../../type";
 import owership from '../../owership';
 import { DEPOSITDAODATA, RPC_NETWORK, TEST_INDEXER } from "../../config/index";
 import { getTransactionSkeleton } from "../customCellProvider";
+import { jsonToHump } from '../../utils/pubilc';
 
 const { ScriptValue } = values;
 
@@ -36,9 +37,12 @@ export enum AddressScriptType {
 export async function withdrawOrUnlock(
   unlockableAmount: DAOUnlockableAmount,
   address: string,
+  // privKey: string,
+  // script: Script,
   feeRate: FeeRate = FeeRate.NORMAL
 ): Promise<string> {
   const res = await owership.getLiveCells();
+  // @ts-ignore
   const cells = await filterDAOCells(res.objects);
 
   const cell = await findCellFromUnlockableAmountAndCells(
@@ -61,11 +65,10 @@ async function findCellFromUnlockableAmountAndCells(
   const capacity = `0x${unlockableAmount.amount.toString(16)}`;
 
   for (let i = 0; i < filtCells.length; i += 1) {
-    // @ts-ignore
     if (
-      filtCells[i].cell_output.capacity === capacity &&
-      // @ts-ignore
-      filtCells[i].out_point.tx_hash === unlockableAmount.txHash
+      filtCells[i].cellOutput.capacity === capacity &&
+    // @ts-ignore
+      filtCells[i].outPoint.txHash === unlockableAmount.txHash
     ) {
       return filtCells[i];
     }
@@ -90,6 +93,11 @@ async function withdrawOrUnlockFromCell(
     if (!(await isCellUnlockable(cell))) {
       throw new Error("Cell can not yet be unlocked.");
     }
+    return unlock(
+      cell,
+      feeAddresses,
+      feeRate
+    );
   }
 
   return withdraw(cell, feeAddresses, feeRate);
@@ -120,13 +128,12 @@ async function withdraw(
   feeRate: FeeRate = FeeRate.NORMAL
 ): Promise<string> {
 
-
+  jsonToHump(inputCell)
   let txSkeleton = getTransactionSkeleton(await owership.getUnusedLocks());
 
   txSkeleton = await dao.withdraw(txSkeleton, inputCell, undefined, {
     config: RPC_NETWORK
   });
-
 
   txSkeleton = await common.payFeeByFeeRate(
     txSkeleton,
@@ -135,6 +142,7 @@ async function withdraw(
     undefined,
     { config: RPC_NETWORK }
   );
+
 
   const localStorage = await window.localStorage.setItem("txSkeleton", JSON.stringify(txSkeleton))
 
@@ -149,7 +157,64 @@ async function withdraw(
 
   const tx = sealTransaction(txSkeletonWEntries, [groupedSignature[0][1]]);
 
+  // const signingPrivKeys = extractPrivateKeys(
+  //   txSkeleton,
+  //   feeAddresses,
+  //   privateKeys
+  // );
+  // const sortedSignPKeys = [
+  //   privateKey,
+  //   ...signingPrivKeys.filter(pkey => pkey !== privateKey)
+  // ];
+
   return sendTransaction(tx);
+}
+
+async function unlock(
+  withdrawCell: Cell,
+  feeAddresses: string[],
+  feeRate: FeeRate = FeeRate.NORMAL
+): Promise<string> {
+  jsonToHump(withdrawCell)
+  let txSkeleton = TransactionSkeleton({ cellProvider: TEST_INDEXER });
+
+  const depositCell = await getDepositCellFromWithdrawCell(withdrawCell);
+
+  if (!(await isCellUnlockable(withdrawCell))) {
+    throw new Error("Cell can not be unlocked. Minimum time is 30 days.");
+  }
+
+  txSkeleton = await dao.unlock(
+    txSkeleton,
+    depositCell,
+    withdrawCell,
+    feeAddresses[0],
+    feeAddresses[0],
+    {
+      config: RPC_NETWORK
+      // RpcClient: RpcMocker as any
+    }
+  );
+
+  txSkeleton = await common.payFeeByFeeRate(
+    txSkeleton,
+    feeAddresses,
+    feeRate,
+    undefined,
+    { config: RPC_NETWORK }
+  );
+
+  const localStorage = await window.localStorage.setItem("txSkeleton", JSON.stringify(txSkeleton))
+  const txSkeletonWEntries = commons.common.prepareSigningEntries(txSkeleton, {
+    config: RPC_NETWORK
+  });
+
+  const transaction = createTransactionFromSkeleton(txSkeleton);
+  const groupedSignature = await owership.signTransaction(transaction);
+  const tx = sealTransaction(txSkeletonWEntries, [groupedSignature[0][1]]);
+  
+  return sendTransaction(tx);
+
 }
 
 async function getDepositCellFromWithdrawCell(
@@ -158,26 +223,27 @@ async function getDepositCellFromWithdrawCell(
   const { index, txHash } = await findCorrectInputFromWithdrawCell(
     withdrawCell
   );
+
   const depositTransaction = await getTransactionFromHash(txHash);
 
   const depositBlockHeader = await getBlockHeaderFromHash(
-    depositTransaction.header.hash
+    depositTransaction.txStatus.blockHash
   );
 
   return {
-    cell_output: {
-      capacity: withdrawCell.cell_output.capacity,
-      lock: { ...withdrawCell.cell_output.lock },
+    cellOutput: {
+      capacity: withdrawCell.cellOutput.capacity,
+      lock: { ...withdrawCell.cellOutput.lock },
       // @ts-ignore
-      type: { ...withdrawCell.cell_output.type }
+      type: { ...withdrawCell.cellOutput.type }
     },
-    out_point: {
-      tx_hash: txHash,
+    outPoint: {
+      txHash: txHash,
       index
     },
     data: DEPOSITDAODATA,
-    block_hash: depositBlockHeader.hash,
-    block_number: depositBlockHeader.number
+    blockHash: depositBlockHeader.hash,
+    blockNumber: depositBlockHeader.number
   };
 }
 
@@ -206,8 +272,8 @@ function getScriptFirstIndex(
 ): number {
   return txSkeleton
     .get("inputs")
-    .findIndex((input: { cell_output: { lock: any; }; }) =>
-      new ScriptValue(input.cell_output.lock, { validate: false }).equals(
+    .findIndex((input: { cellOutput: { lock: any; }; }) =>
+      new ScriptValue(input.cellOutput.lock, { validate: false }).equals(
         new ScriptValue(fromScript, { validate: false })
       )
     );
@@ -217,3 +283,18 @@ function getScriptFirstIndex(
 function getLockFromAddress(address: string): Script {
   return helpers.parseAddress(address, { config: RPC_NETWORK });
 }
+
+// function getNextAddress(): string {
+//   return getAddress(firstRIndexWithoutTxs, AddressType.Receiving);
+// }
+
+// // Gets address from a specific accountId, addressType and script type
+// function getAddress(accountId = 0, addressType: AddressType, script: AddressScriptType = AddressScriptType.SECP256K1_BLAKE160): string {
+//     const key = `${accountId}-${addressType}-${script}`;
+//     if (!this.addressMap[key]) {
+//         const address = this.connection.getAddressFromLock(this.getLock(accountId, addressType, script));
+//         this.addressMap[key] = address;
+//     }
+
+//     return this.addressMap[key];
+// }

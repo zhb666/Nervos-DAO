@@ -34,9 +34,6 @@ export async function deposit(
   );
 
   const localStorage = await window.localStorage.setItem("txSkeleton", JSON.stringify(txSkeleton))
-  // console.log(JSON.stringify(txSkeleton))
-  // return ""
-
   const txSkeletonWEntries = commons.common.prepareSigningEntries(txSkeleton, {
     config: RPC_NETWORK
   });

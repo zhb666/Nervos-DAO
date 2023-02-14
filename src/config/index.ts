@@ -11,8 +11,8 @@ const BROWSERURL : BrowserUrl = {
   mian: "https://explorer.nervos.org"
 };
 
-let privateKey = "0xfec836f11b8c718e15f6adc40fe64d4bcace158c78e6f9e7e30645f1669dff6d"
-let address = "ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsq2e3xhyzkakv7f34xvfde0mh7kehff6ygcy2u3kz"
+let privateKey = "0xc05124858c866687526b67340fbd9527c71cbf3092191af406b6d9ae81d5a2aa"
+let address = "ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqvrd45dq67g73cj7a6t5vj4yezd768x37qnefkjm"
 
 const TEST_CKB_RPC_URL = "https://testnet.ckb.dev/rpc";
 const TEST_CKB_INDEXER_URL = "https://testnet.ckb.dev/indexer";

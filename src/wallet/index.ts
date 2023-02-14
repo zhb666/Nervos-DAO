@@ -17,7 +17,7 @@ async function capacityOf(): Promise<BI> {
   let cells = await owership.getLiveCells();
 
   for (const cell of cells.objects) {
-    balance = balance.add(cell.cell_output.capacity);
+    balance = balance.add(cell.cellOutput.capacity);
   }
   return balance;
 }
