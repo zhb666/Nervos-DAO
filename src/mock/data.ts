@@ -444,30 +444,26 @@ const cells = {
             "blockNumber": "0x6f35b7"
         },
         {
-            "data": "0x04906f0000000000",
+            "data": "0x",
             "cellOutput": {
-                "capacity": "0x4a221e700",
+                "capacity": "0x4a221e92f",
                 "lock": {
                     "args": "0x836d68d06bc8f4712f774ba32552644df68e68f8",
                     "codeHash": "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
                     "hashType": "type"
                 },
-                "type": {
-                    "args": "0x",
-                    "codeHash": "0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e",
-                    "hashType": "type"
-                }
+                "type": null
             },
             "outPoint": {
                 "index": "0x0",
-                "txHash": "0xce12990335e2481726e848ec1640bc10237d3498e750ecd16b2446de0b52dcd0"
+                "txHash": "0x73bcf5104c58ccd695b5692e1aacf39b80fc8bb7c8d989214adf13c4b30a6ed8"
             },
-            "blockNumber": "0x6f900c"
+            "blockNumber": "0x7f3893"
         },
         {
             "data": "0x",
             "cellOutput": {
-                "capacity": "0x3fb3057448",
+                "capacity": "0x3fb3047e94",
                 "lock": {
                     "args": "0x836d68d06bc8f4712f774ba32552644df68e68f8",
                     "codeHash": "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
@@ -477,18 +473,18 @@ const cells = {
             },
             "outPoint": {
                 "index": "0x1",
-                "txHash": "0xce12990335e2481726e848ec1640bc10237d3498e750ecd16b2446de0b52dcd0"
+                "txHash": "0x73bcf5104c58ccd695b5692e1aacf39b80fc8bb7c8d989214adf13c4b30a6ed8"
             },
-            "blockNumber": "0x6f900c"
+            "blockNumber": "0x7f3893"
         }
     ],
-    "lastCursor": "0x209bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce801836d68d06bc8f4712f774ba32552644df68e68f800000000006f900c0000000100000001"
+    "lastCursor": "0x209bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce801836d68d06bc8f4712f774ba32552644df68e68f800000000007f38930000000100000001"
 }
 
 const script:Script = {
   codeHash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
   hashType: "type",
-  args: "0x5989ae415bb667931a99896e5fbbfad9ba53a223"
+  args: "0x836d68d06bc8f4712f774ba32552644df68e68f8"
 }
 
 export {cells,script}
