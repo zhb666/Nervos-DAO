@@ -37,13 +37,13 @@ export async function deposit(
 
     let prepareAmount = BI.from(0);
     for (let i = 0; i < fullCells.length; i++) {
-      console.log(fullCells, "fullCells_______");
-
-      const cellCkbAmount = BI.from(fullCells[i].cellOutput.capacity);
-      preparedCells.push(fullCells[i]);
-      prepareAmount = prepareAmount.add(cellCkbAmount);
-      if (prepareAmount.gte(transferAmountBI)) {
-        break;
+      if (!fullCells[i].cellOutput.type) {
+        const cellCkbAmount = BI.from(fullCells[i].cellOutput.capacity);
+        preparedCells.push(fullCells[i]);
+        prepareAmount = prepareAmount.add(cellCkbAmount);
+        if (prepareAmount.gte(transferAmountBI)) {
+          break;
+        }
       }
     }
 
