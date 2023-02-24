@@ -9,6 +9,7 @@ import { getUnlockableAmountsFromCells, withdrawOrUnlock } from "../../wallet"
 
 import './index.css';
 import owership from '../../owership';
+import nexus from '../../nexus';
 
 declare const window: {
 	localStorage: {
@@ -164,11 +165,12 @@ const TransactionsTable: React.FC<Props> = ({
 
 	// get table data
 	const getTableData = async () => {
-		const cells = await owership.getLiveCells();
-		console.log(cells);
+		const nexusWallet = await nexus.connect();
+		const fullCells = (await nexusWallet.fullOwnership.getLiveCells({})).objects;
+		// const cells = await owership.getLiveCells();
 
 		// @ts-ignore
-		const res = await getUnlockableAmountsFromCells(cells.objects)
+		const res = await getUnlockableAmountsFromCells(fullCells)
 
 		let DaoBalance = 0
 		let Income = 0

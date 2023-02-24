@@ -60,10 +60,10 @@ async function capacityOf(): Promise<BI> {
 }
 
 // 获取未使用Script
-export async function getUnusedLocks(
+export async function getOffChainLocks(
   cursor?: string
 ) {
-  let unUsedLocks:ScriptObject = await CkbProvider.bip44.getUnusedLocks({cursor});
+  let unUsedLocks:ScriptObject = await CkbProvider.bip44.getOffChainLocks({cursor});
   return unUsedLocks
 }
 ```

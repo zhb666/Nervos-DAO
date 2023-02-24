@@ -19,9 +19,8 @@ class CustomCellProvider implements CellProvider {
   }
 
   collector(queryOptions: QueryOptions): CellCollector {
-    console.log(queryOptions, "queryOptions");
-    console.log(this.myQueryOptions, "myQueryOptions");
-
+    console.log(this.indexer.collector({ ...queryOptions, ...this.myQueryOptions }),"haha");
+    
     return this.indexer.collector({ ...queryOptions, ...this.myQueryOptions });
   }
 }
@@ -42,3 +41,5 @@ function getTransactionSkeleton(lock?:Script) {
 }
 
 export { getEmptyCellProvider, getTransactionSkeleton };
+
+

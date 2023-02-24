@@ -1,3 +1,4 @@
+import { render } from '@testing-library/react';
 import { Cell, Script } from "@ckb-lumos/base";
 import { since, helpers } from "@ckb-lumos/lumos";
 import { dao, common } from "@ckb-lumos/common-scripts";
@@ -129,7 +130,7 @@ async function withdraw(
 ): Promise<string> {
 
   jsonToHump(inputCell)
-  let txSkeleton = getTransactionSkeleton(await owership.getUnusedLocks());
+  let txSkeleton = getTransactionSkeleton(await owership.getOffChainLocks());
 
   txSkeleton = await dao.withdraw(txSkeleton, inputCell, undefined, {
     config: RPC_NETWORK
@@ -155,7 +156,7 @@ async function withdraw(
 
   const groupedSignature = await owership.signTransaction(transaction);
 
-  const tx = sealTransaction(txSkeletonWEntries, [groupedSignature[0][1]]);
+  const tx = sealTransaction(txSkeletonWEntries, groupedSignature.map(([script,sign])=>{return sign}));
 
   // const signingPrivKeys = extractPrivateKeys(
   //   txSkeleton,

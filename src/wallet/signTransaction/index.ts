@@ -14,7 +14,7 @@ export async function signTransaction(
   const txSkeleton:TransactionSkeletonType = JSON.parse(window.localStorage.getItem('txSkeleton'))
   const txSkeletonObject: TransactionSkeletonType = txSkeleton
   const privateKeys: string[] = [privateKey]
-  const script = await owership.getUnusedLocks()
+  const script = await owership.getOffChainLocks()
 
   // @ts-ignore
   const mockFetcher: LiveCellFetcher = (outPoint: { txHash: string; index: any; }) =>

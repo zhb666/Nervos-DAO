@@ -9,8 +9,8 @@ export interface TransactionObject {
 }
 
 export interface ScriptObject {
-  code_hash: string;
-  hash_type: string;
+  codeHash: string;
+  hashType: string;
   args: string;
 }
 

@@ -6,7 +6,7 @@ interface BrowserUrl {
   mian: string;
 }
 
-const BROWSERURL : BrowserUrl = {
+const BROWSERURL: BrowserUrl = {
   test: "https://pudge.explorer.nervos.org",
   mian: "https://explorer.nervos.org"
 };

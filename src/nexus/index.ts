@@ -1,15 +1,19 @@
 
 declare const window: {
-    InjectedCkb: any
+    ckb: any
   };
 
 const nexus = {
     async connect() { 
-        if (window.InjectedCkb) { 
+        if (window.ckb) { 
+            // const isEnabled = await window.ckb.isEnabled()
+            // console.log(isEnabled, "isEnabled");
+
             try {
-                const ckbProvider = await window.InjectedCkb.enable();
-                console.log(ckbProvider, "accounts");
-                if (ckbProvider) {
+                // if(isEnabled){}
+                const ckbProvider = await window.ckb.enable();
+                console.log(ckbProvider, "ckbProvider");
+                if (!ckbProvider) {
                   alert("Need to download nexus wallet");
                   return;
                 }
@@ -17,7 +21,6 @@ const nexus = {
               } catch (error) {
                 alert(error);
               }
-            const ckbProvider = await window.InjectedCkb.enable();
         } else {
             // Need to download nexus wallet
             console.log("Need to download nexus wallet")

@@ -9,6 +9,7 @@ import { address, DAOCELLSIZE, privateKey, BROWSERURL } from '../../config';
 import { UserStore } from "../../stores";
 import { minus } from '../../utils/bigNumber';
 import Table from '../../components/DaoTable'
+import nexus from '../../nexus';
 
 const Home: React.FC = () => {
     const UserStoreHox = UserStore();
@@ -43,17 +44,11 @@ const Home: React.FC = () => {
 
         setLoading(true)
 
-        const txhash = await daoDeposit(BigInt(amount * 10 ** 8), 1000);
+        const txhash = await daoDeposit(BigInt(amount), 1000);
         setLoading(false)
         setOff(false)
         setTxHash(txhash)
         console.log(txhash);
-    }
-
-    const capacity = async () => {
-        const capacity = await capacityOf();
-        setBalance(capacity.toString())
-        // console.log(Number(capacity.toString())/ 100000000);
     }
 
     const updateFromInfo = async () => {
@@ -62,16 +57,17 @@ const Home: React.FC = () => {
     };
 
     useEffect(() => {
-        if (privKey) {
+        if (connectWallet) {
             updateFromInfo();
         }
-    }, [privKey]);
+    }, [connectWallet]);
 
     return (
         <div className='mian'>
             <h3>Account</h3>
             <ul className='address'>
-                <li>Address :  {connectWallet ? cutValue(fromAddr, 20, 20) : "Please connect Nexus Wallet"}</li>
+                {/* <li>Address :  {connectWallet ? cutValue(fromAddr, 20, 20) : "Please connect Nexus Wallet"}</li> */}
+                <li>Address :  {connectWallet ? "我的钱包" : "Please connect Nexus Wallet"}</li>
                 <li>Total CKB : {connectWallet ? Number(balance) / 100000000 : "Please connect Nexus Wallet"}</li>
             </ul>
             <h3 className='h3'>Amount </h3>

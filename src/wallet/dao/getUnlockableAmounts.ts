@@ -42,10 +42,9 @@ export async function filterDAOCells(
       }
 
       if (!cell.blockHash && cell.blockNumber && cell.outPoint) {
-        // const header = await HTTPRPC.getTransaction(cell.out_point.tx_hash);
         const header = await getBlockHeaderFromNumber(cell.blockNumber);
         filteredCells.push({ ...cell, blockHash: header.hash });
-        
+
       } else {
         filteredCells.push(cell);
       }
@@ -66,6 +65,7 @@ function isCellDAO(cell: Cell): boolean {
   }
 
   const { codeHash, hashType, args } = cell.cellOutput.type;
+
   return (
     codeHash === daoScript.codeHash &&
     hashType === daoScript.hashType &&
@@ -149,7 +149,7 @@ async function getWithdrawCellMaximumWithdraw(
 export async function findCorrectInputFromWithdrawCell(
   withdrawCell: Cell
 ): Promise<{ index: string; txHash: string }> {
-  
+
   const transaction = await getTransactionFromHash(
     // @ts-ignore
     withdrawCell.outPoint.txHash as string
@@ -159,17 +159,17 @@ export async function findCorrectInputFromWithdrawCell(
   let txHash: string = "";
   for (let i = 0; i < transaction.transaction.inputs.length && !index; i += 1) {
 
-    
+
     const prevOut = transaction.transaction.inputs[i].previousOutput;
 
     const possibleTx = await getTransactionFromHash(prevOut.txHash);
-    
+
     const output = possibleTx.transaction.outputs[parseInt(prevOut.index, 16)];
 
     index = prevOut.index;
     txHash = prevOut.txHash;
-    
-    
+
+
     // if (
     //   output.type &&
     //   output.capacity === withdrawCell.cell_output.capacity &&
@@ -200,12 +200,12 @@ export async function getTransactionFromHash(
 ): Promise<any> {
 
   if (transactionHash != "0x" && transactionHash != "") {
-    if (!useMap || !transactionMap.has(transactionHash)  ) {
+    if (!useMap || !transactionMap.has(transactionHash)) {
       const transaction = await HTTPRPC.getTransaction(transactionHash);
       transactionMap.set(transactionHash, transaction);
     }
   }
-  
+
   return transactionMap.get(transactionHash);
 }
 
@@ -217,7 +217,7 @@ export async function getWithdrawDaoEarliestSince(
   );
 
   const { txHash } = await findCorrectInputFromWithdrawCell(withdrawCell);
-  
+
   const depositTransaction = await getTransactionFromHash(txHash);
   const depositBlockHeader = await getBlockHeaderFromHash(depositTransaction.txStatus.blockHash);
 
@@ -231,9 +231,12 @@ export async function getUnlockableAmountsFromCells(
   cells: Cell[]
 ): Promise<DAOUnlockableAmount[]> {
 
-  
+  console.log(cells, "cells__-");
+
   const unlockableAmounts: DAOUnlockableAmount[] = [];
   const filtCells = await filterDAOCells(cells);
+  console.log(filtCells, "filtCells_____");
+
   const currentBlockHeader = await getCurrentBlockHeader();
   const currentEpoch = since.parseEpoch(currentBlockHeader.epoch);
 

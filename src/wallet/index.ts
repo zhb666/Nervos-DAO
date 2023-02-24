@@ -1,4 +1,4 @@
-import { BI } from "@ckb-lumos/lumos";
+import { BI, helpers, Script } from "@ckb-lumos/lumos";
 import { signTransaction } from "./signTransaction";
 import { sendTransaction } from "./sendTransaction";
 import {
@@ -8,14 +8,16 @@ import {
 } from "./dao";
 
 import { ScriptObject } from "../type";
-import owership  from "../owership";
+import owership from "../owership";
+import nexus from '../nexus';
+import { RPC_NETWORK } from '../config';
 
 async function capacityOf(): Promise<BI> {
-  // Convert to bi object
   let balance = BI.from(0);
+  const nexusWallet = await nexus.connect();
+  const cells = await nexusWallet.fullOwnership.getLiveCells({});
 
-  let cells = await owership.getLiveCells();
-
+  // let cells = await owership.getLiveCells();
   for (const cell of cells.objects) {
     balance = balance.add(cell.cellOutput.capacity);
   }
@@ -27,15 +29,20 @@ function hexDataOccupiedBytes(hex_string: string) {
   return (hex_string.length - 2) / 2;
 }
 
-function scriptOccupiedBytes(script: ScriptObject) {
+function scriptOccupiedBytes(script: Script) {
   if (script !== undefined && script !== null) {
     return hexDataOccupiedBytes(script.args);
   }
   return 0;
 }
 
-function cellOccupiedBytes(script: ScriptObject) {
+function cellOccupiedBytes(script: Script) {
   return 8 + 32 + 1 + 0 + 0 + scriptOccupiedBytes(script);
+}
+
+function getAddress(script: Script) {
+  const address = helpers.encodeToAddress(script, { config: RPC_NETWORK });
+  return address
 }
 
 export {
@@ -45,5 +52,6 @@ export {
   deposit,
   cellOccupiedBytes,
   getUnlockableAmountsFromCells,
-  withdrawOrUnlock
+  withdrawOrUnlock,
+  getAddress
 };

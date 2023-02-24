@@ -8,7 +8,7 @@ const owership = {
     getLiveCells() { 
         return Promise.resolve(cells)
     },
-    getUnusedLocks(): Promise<Script> {return Promise.resolve(script)},
+    getOffChainLocks(): Promise<Script> {return Promise.resolve(script)},
     async signTransaction(tx: Transaction): Promise<GroupedSignature> { 
         return Promise.resolve(await signTransaction(tx))
     },
