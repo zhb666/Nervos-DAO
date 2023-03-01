@@ -52,6 +52,7 @@ export async function deposit(
     config: RPC_NETWORK
   });
 
+  console.log("是这个理——·");
 
 
   txSkeleton = await common.payFeeByFeeRate(
@@ -67,6 +68,7 @@ export async function deposit(
   const txSkeletonWEntries = commons.common.prepareSigningEntries(txSkeleton, {
     config: RPC_NETWORK
   });
+
 
 
   const transaction = createTransactionFromSkeleton(txSkeleton);

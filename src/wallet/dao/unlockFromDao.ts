@@ -1,9 +1,11 @@
 import { render } from '@testing-library/react';
 import { Cell, Script } from "@ckb-lumos/base";
-import { since, helpers } from "@ckb-lumos/lumos";
+import { since, helpers, WitnessArgs, BI } from "@ckb-lumos/lumos";
 import { dao, common } from "@ckb-lumos/common-scripts";
 import { values } from "@ckb-lumos/base";
 import { commons } from '@ckb-lumos/lumos';
+import { bytes } from "@ckb-lumos/codec";
+import { blockchain } from "@ckb-lumos/base";
 import {
   TransactionSkeleton,
   TransactionSkeletonType,
@@ -26,6 +28,8 @@ import owership from '../../owership';
 import { DEPOSITDAODATA, RPC_NETWORK, TEST_INDEXER } from "../../config/index";
 import { getTransactionSkeleton } from "../customCellProvider";
 import { jsonToHump } from '../../utils/pubilc';
+import { log } from 'console';
+import nexus from '../../nexus';
 
 const { ScriptValue } = values;
 
@@ -42,19 +46,27 @@ export async function withdrawOrUnlock(
   // script: Script,
   feeRate: FeeRate = FeeRate.NORMAL
 ): Promise<string> {
-  const res = await owership.getLiveCells();
+  const nexusWallet = await nexus.connect();
+  const fullCells = (await nexusWallet.fullOwnership.getLiveCells({})).objects;
+  // const res = await owership.getLiveCells();
   // @ts-ignore
-  const cells = await filterDAOCells(res.objects);
+  const cells = await filterDAOCells(fullCells);
+
+  console.log(cells, "filterDAOCells");
+
 
   const cell = await findCellFromUnlockableAmountAndCells(
     unlockableAmount,
     cells
   );
 
+  console.log(cell, "cell_____");
+
+
   if (!cell) {
     throw new Error("Cell related to unlockable amount not found!");
   }
-  
+
   return withdrawOrUnlockFromCell(cell, address, feeRate);
 }
 
@@ -68,7 +80,7 @@ async function findCellFromUnlockableAmountAndCells(
   for (let i = 0; i < filtCells.length; i += 1) {
     if (
       filtCells[i].cellOutput.capacity === capacity &&
-    // @ts-ignore
+      // @ts-ignore
       filtCells[i].outPoint.txHash === unlockableAmount.txHash
     ) {
       return filtCells[i];
@@ -129,46 +141,97 @@ async function withdraw(
   feeRate: FeeRate = FeeRate.NORMAL
 ): Promise<string> {
 
-  jsonToHump(inputCell)
-  let txSkeleton = getTransactionSkeleton(await owership.getOffChainLocks());
+  let txHash = ''
+  const nexusWallet = await nexus.connect();
+  const offChainLocks = await nexusWallet.fullOwnership.getOffChainLocks({})
+  const fullCells = (await nexusWallet.fullOwnership.getLiveCells({})).objects;
+
+
+  const changeLock: Script = offChainLocks[0];
+  console.log(changeLock, "changeLock");
+
+  const preparedCells: Cell[] = [];
+  const transferAmountBI = BI.from(1).mul(10 ** 8);
+  console.log(transferAmountBI.toString(), "transferAmountBI");
+
+  let prepareAmount = BI.from(0);
+  for (let i = 0; i < fullCells.length; i++) {
+    if (!fullCells[i].cellOutput.type) {
+      const cellCkbAmount = BI.from(fullCells[i].cellOutput.capacity);
+      preparedCells.push(fullCells[i]);
+      prepareAmount = prepareAmount.add(cellCkbAmount);
+      if (prepareAmount.gte(transferAmountBI)) {
+        break;
+      }
+    }
+  }
+
+
+  let txSkeleton = getTransactionSkeleton(offChainLocks[0]);
 
   txSkeleton = await dao.withdraw(txSkeleton, inputCell, undefined, {
     config: RPC_NETWORK
   });
 
-  txSkeleton = await common.payFeeByFeeRate(
-    txSkeleton,
-    feeAddresses,
-    feeRate,
-    undefined,
-    { config: RPC_NETWORK }
-  );
+  console.log(preparedCells, "changeLock");
 
-
-  const localStorage = await window.localStorage.setItem("txSkeleton", JSON.stringify(txSkeleton))
-
-  const txSkeletonWEntries = commons.common.prepareSigningEntries(txSkeleton, {
-    config: RPC_NETWORK
+  txSkeleton = txSkeleton.update("inputs", (inputs) => {
+    return inputs.concat(...preparedCells);
   });
 
+  const outputCells: Cell[] = [];
 
-  const transaction = createTransactionFromSkeleton(txSkeleton);
+  outputCells[0] = {
+    cellOutput: {
+      // change amount = prepareAmount - transferAmount - 1000 shannons for tx fee
+      capacity: prepareAmount.sub(1000000).sub(1000).toHexString(),
+      lock: changeLock,
+      // lock: preparedCells[0].cellOutput.lock,
+    },
+    data: "0x",
+  };
+  txSkeleton = txSkeleton.update("outputs", (outputs) => {
+    return outputs.concat(...outputCells);
+  });
 
-  const groupedSignature = await owership.signTransaction(transaction);
+  // TODO bytes.hexify(blockchain.witness.pack({ lock: bytes.hexify(Buffer.alloc(65))}))
+  txSkeleton = txSkeleton.update("witnesses", (witnesses) =>
+    witnesses.concat("0x55000000100000005500000055000000410000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+  );
 
-  const tx = sealTransaction(txSkeletonWEntries, groupedSignature.map(([script,sign])=>{return sign}));
+  console.log(JSON.parse(JSON.stringify(txSkeleton)), "txSkeleton");
+  // console.log(preparedCells, "preparedCells");
 
-  // const signingPrivKeys = extractPrivateKeys(
-  //   txSkeleton,
-  //   feeAddresses,
-  //   privateKeys
-  // );
-  // const sortedSignPKeys = [
-  //   privateKey,
-  //   ...signingPrivKeys.filter(pkey => pkey !== privateKey)
-  // ];
+  // return ""
 
-  return sendTransaction(tx);
+  const tx = createTransactionFromSkeleton(txSkeleton);
+  console.log("tx to sign:", tx);
+
+  const signatures: any[] = await nexusWallet.fullOwnership.signTransaction({ tx });
+
+  console.log("signatures", signatures);
+
+  for (let index = 0; index < signatures.length; index++) {
+    const [lock, sig] = signatures[index];
+    const newWitnessArgs: WitnessArgs = {
+      lock: sig,
+    };
+    const newWitness = bytes.hexify(
+      blockchain.WitnessArgs.pack(newWitnessArgs)
+    );
+    tx.witnesses[index] = newWitness;
+  }
+
+  console.log("tx to sign:", tx);
+
+  return await sendTransaction(tx);
+
+
+  // const groupedSignature = await owership.signTransaction(transaction);
+
+  // const tx = sealTransaction(txSkeletonWEntries, groupedSignature.map(([script, sign]) => { return sign }));
+
+  // return sendTransaction(tx);
 }
 
 async function unlock(
@@ -213,7 +276,7 @@ async function unlock(
   const transaction = createTransactionFromSkeleton(txSkeleton);
   const groupedSignature = await owership.signTransaction(transaction);
   const tx = sealTransaction(txSkeletonWEntries, [groupedSignature[0][1]]);
-  
+
   return sendTransaction(tx);
 
 }

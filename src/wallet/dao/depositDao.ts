@@ -114,7 +114,7 @@ export async function deposit(
         depType: "depGroup"
       }
     ]
-
+    // @ts-ignore
     txSkeleton = txSkeleton.update("cellDeps", (cellDeps) => {
       return cellDeps.concat(...cellDepsOutPoint);
     });
@@ -139,6 +139,8 @@ export async function deposit(
     }
 
     console.log(JSON.parse(JSON.stringify(txSkeleton)), "txSkeleton");
+
+    return ""
 
 
     const tx = helpers.createTransactionFromSkeleton(txSkeleton);
