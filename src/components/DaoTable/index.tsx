@@ -101,7 +101,8 @@ const TransactionsTable: React.FC<Props> = ({
 						withdraw(record)
 					}}>withdraw</Button> : <Button className='actionButton' onClick={() => {
 						withdraw(record)
-					}} disabled={!record.unlockable} >unlock</Button>}
+						// disabled={!record.unlockable}
+					}}  >unlock</Button>}
 				</div>
 			),
 		},

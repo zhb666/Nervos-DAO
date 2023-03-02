@@ -140,9 +140,6 @@ export async function deposit(
 
     console.log(JSON.parse(JSON.stringify(txSkeleton)), "txSkeleton");
 
-    return ""
-
-
     const tx = helpers.createTransactionFromSkeleton(txSkeleton);
     console.log("tx to sign:", tx);
 

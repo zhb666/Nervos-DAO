@@ -4,7 +4,7 @@ import { since, helpers, WitnessArgs, BI } from "@ckb-lumos/lumos";
 import { dao, common } from "@ckb-lumos/common-scripts";
 import { values } from "@ckb-lumos/base";
 import { commons } from '@ckb-lumos/lumos';
-import { bytes } from "@ckb-lumos/codec";
+import { bytes, number } from "@ckb-lumos/codec";
 import { blockchain } from "@ckb-lumos/base";
 import {
   TransactionSkeleton,
@@ -22,7 +22,7 @@ import {
   getTransactionFromHash,
   getBlockHeaderFromHash
 } from "./index";
-import { sendTransaction, signTransaction } from "../index";
+import { getAddress, sendTransaction, signTransaction } from "../index";
 import { DAOUnlockableAmount, FeeRate } from "../../type";
 import owership from '../../owership';
 import { DEPOSITDAODATA, RPC_NETWORK, TEST_INDEXER } from "../../config/index";
@@ -102,10 +102,11 @@ async function withdrawOrUnlockFromCell(
   const to = feeAddresses[0];
 
   if (!isCellDeposit(cell)) {
+    // TODO 
     // Check real unlockability
-    if (!(await isCellUnlockable(cell))) {
-      throw new Error("Cell can not yet be unlocked.");
-    }
+    // if (!(await isCellUnlockable(cell))) {
+    //   throw new Error("Cell can not yet be unlocked.");
+    // }
     return unlock(
       cell,
       feeAddresses,
@@ -240,44 +241,157 @@ async function unlock(
   feeRate: FeeRate = FeeRate.NORMAL
 ): Promise<string> {
   jsonToHump(withdrawCell)
-  let txSkeleton = TransactionSkeleton({ cellProvider: TEST_INDEXER });
+  // let txSkeleton = TransactionSkeleton({ cellProvider: TEST_INDEXER });
+
+  const nexusWallet = await nexus.connect();
+  const offChainLocks = await nexusWallet.fullOwnership.getOffChainLocks({})
+  const fullCells = (await nexusWallet.fullOwnership.getLiveCells({})).objects;
+
+  const changeLock: Script = offChainLocks[0];
+  console.log(changeLock, "changeLock");
 
   const depositCell = await getDepositCellFromWithdrawCell(withdrawCell);
 
-  if (!(await isCellUnlockable(withdrawCell))) {
-    throw new Error("Cell can not be unlocked. Minimum time is 30 days.");
+  const address = getAddress(offChainLocks[0])
+  // TODO
+  // if (!(await isCellUnlockable(withdrawCell))) {
+  //   throw new Error("Cell can not be unlocked. Minimum time is 30 days.");
+  // }
+
+  const preparedCells: Cell[] = [];
+  const transferAmountBI = BI.from(1).mul(10 ** 8);
+  console.log(transferAmountBI.toString(), "transferAmountBI");
+
+  let prepareAmount = BI.from(0);
+  for (let i = 0; i < fullCells.length; i++) {
+    if (!fullCells[i].cellOutput.type) {
+      const cellCkbAmount = BI.from(fullCells[i].cellOutput.capacity);
+      preparedCells.push(fullCells[i]);
+      prepareAmount = prepareAmount.add(cellCkbAmount);
+      if (prepareAmount.gte(transferAmountBI)) {
+        break;
+      }
+    }
   }
+
+
+  let txSkeleton = getTransactionSkeleton(offChainLocks[0]);
+
+  console.log(offChainLocks, "offChainLocks");
+
 
   txSkeleton = await dao.unlock(
     txSkeleton,
     depositCell,
     withdrawCell,
-    feeAddresses[0],
-    feeAddresses[0],
+    address,
+    address,
     {
       config: RPC_NETWORK
       // RpcClient: RpcMocker as any
     }
   );
 
-  txSkeleton = await common.payFeeByFeeRate(
-    txSkeleton,
-    feeAddresses,
-    feeRate,
-    undefined,
-    { config: RPC_NETWORK }
-  );
+  console.log(JSON.parse(JSON.stringify(txSkeleton)), "txSkeleton1111");
 
-  const localStorage = await window.localStorage.setItem("txSkeleton", JSON.stringify(txSkeleton))
-  const txSkeletonWEntries = commons.common.prepareSigningEntries(txSkeleton, {
-    config: RPC_NETWORK
+  console.log(preparedCells, "changeLock");
+
+  txSkeleton = txSkeleton.update("inputs", (inputs) => {
+    return inputs.concat(...preparedCells);
   });
 
-  const transaction = createTransactionFromSkeleton(txSkeleton);
-  const groupedSignature = await owership.signTransaction(transaction);
-  const tx = sealTransaction(txSkeletonWEntries, [groupedSignature[0][1]]);
+  const outputCells: Cell[] = [];
 
-  return sendTransaction(tx);
+  outputCells[0] = {
+    cellOutput: {
+      // change amount = prepareAmount - transferAmount - 1000 shannons for tx fee
+      capacity: prepareAmount.sub(10000).toHexString(),
+      lock: changeLock,
+      // lock: preparedCells[0].cellOutput.lock,
+    },
+    data: "0x",
+  };
+  txSkeleton = txSkeleton.update("outputs", (outputs) => {
+    return outputs.concat(...outputCells);
+  });
+
+  // TODO bytes.hexify(blockchain.witness.pack({ lock: bytes.hexify(Buffer.alloc(65)) }))
+  txSkeleton = txSkeleton.update("witnesses", (witnesses) =>
+    witnesses.concat("0x61000000100000005500000061000000410000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000")
+  );
+
+  // const witnessArgs: WitnessArgs = {
+  //   /* 65-byte zeros in hex */
+  //   lock: "0x61000000100000005500000061000000410000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000",
+  // };
+  // const secp256k1Witness = bytes.hexify(
+  //   blockchain.WitnessArgs.pack(witnessArgs)
+  // );
+  // for (let i = 0; i < preparedCells.length; i++) {
+  //   txSkeleton = txSkeleton.update("witnesses", (witnesses) =>
+  //     witnesses.set(i, secp256k1Witness)
+  //   );
+  // }
+
+
+  console.log(JSON.parse(JSON.stringify(txSkeleton)), "txSkeleton3333");
+  // console.log(preparedCells, "preparedCells");
+
+  // return ""
+
+  const tx = createTransactionFromSkeleton(txSkeleton);
+
+  const signatures: any[] = await nexusWallet.fullOwnership.signTransaction({ tx });
+
+  console.log("signatures", signatures);
+
+  const indexOfOriginalDeposit = 0; // change to actual index
+  const witnessArgs2: WitnessArgs = {
+    /* 65-byte zeros in hex */
+    lock: bytes.hexify(new Uint8Array(65)),
+    inputType: bytes.hexify(number.Uint64LE.pack(indexOfOriginalDeposit)),
+  };
+  const serialized2 = bytes.hexify(blockchain.WitnessArgs.pack(witnessArgs2));
+  console.log("serialized2", serialized2);
+
+
+  // for (let index = 0; index < signatures.length; index++) {
+  //   const [lock, sig] = signatures[index];
+  //   const newWitnessArgs: WitnessArgs = {
+  //     lock: sig,
+  //   };
+  //   const newWitness = bytes.hexify(
+  //     blockchain.WitnessArgs.pack(newWitnessArgs)
+  //   );
+  //   console.log(newWitness, "newWitness____");
+
+  //   tx.witnesses[index] = newWitness;
+  // }
+
+  console.log("tx to sign:", tx);
+
+  return await sendTransaction(tx);
+
+  // return ""
+
+  // txSkeleton = await common.payFeeByFeeRate(
+  //   txSkeleton,
+  //   feeAddresses,
+  //   feeRate,
+  //   undefined,
+  //   { config: RPC_NETWORK }
+  // );
+
+  // const localStorage = await window.localStorage.setItem("txSkeleton", JSON.stringify(txSkeleton))
+  // const txSkeletonWEntries = commons.common.prepareSigningEntries(txSkeleton, {
+  //   config: RPC_NETWORK
+  // });
+
+  // const transaction = createTransactionFromSkeleton(txSkeleton);
+  // const groupedSignature = await owership.signTransaction(transaction);
+  // const tx = sealTransaction(txSkeletonWEntries, [groupedSignature[0][1]]);
+
+  // return sendTransaction(tx);
 
 }
 
