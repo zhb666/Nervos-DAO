@@ -159,12 +159,6 @@ export async function deposit(
 
     txHash = await sendTransaction(tx);
 
-
-    // console.log("tx to send on chain", tx);
-    // // const rpc = new RPC("https://testnet.ckb.dev");
-    // // const txHash = await rpc.sendTransaction(tx);
-    // console.log("txHash", txHash);
-
   } catch (error) {
     console.log("handleTransfer error", error);
   }

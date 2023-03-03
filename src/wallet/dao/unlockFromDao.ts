@@ -41,9 +41,6 @@ export enum AddressScriptType {
 
 export async function withdrawOrUnlock(
   unlockableAmount: DAOUnlockableAmount,
-  address: string,
-  // privKey: string,
-  // script: Script,
   feeRate: FeeRate = FeeRate.NORMAL
 ): Promise<string> {
   const nexusWallet = await nexus.connect();
@@ -51,23 +48,19 @@ export async function withdrawOrUnlock(
   // const res = await owership.getLiveCells();
   // @ts-ignore
   const cells = await filterDAOCells(fullCells);
-
   console.log(cells, "filterDAOCells");
-
 
   const cell = await findCellFromUnlockableAmountAndCells(
     unlockableAmount,
     cells
   );
-
   console.log(cell, "cell_____");
-
 
   if (!cell) {
     throw new Error("Cell related to unlockable amount not found!");
   }
 
-  return withdrawOrUnlockFromCell(cell, address, feeRate);
+  return withdrawOrUnlockFromCell(cell, feeRate);
 }
 
 async function findCellFromUnlockableAmountAndCells(
@@ -93,14 +86,8 @@ async function findCellFromUnlockableAmountAndCells(
 
 async function withdrawOrUnlockFromCell(
   cell: Cell,
-  address: string,
   feeRate: FeeRate = FeeRate.NORMAL
 ): Promise<string> {
-  const feeAddresses = [address];
-
-  // TODO Dao receives and writes his own address
-  const to = feeAddresses[0];
-
   if (!isCellDeposit(cell)) {
     // TODO 
     // Check real unlockability
@@ -109,12 +96,11 @@ async function withdrawOrUnlockFromCell(
     // }
     return unlock(
       cell,
-      feeAddresses,
       feeRate
     );
   }
 
-  return withdraw(cell, feeAddresses, feeRate);
+  return withdraw(cell, feeRate);
 }
 
 async function isCellUnlockable(cell: Cell): Promise<boolean> {
@@ -138,7 +124,6 @@ async function isCellUnlockable(cell: Cell): Promise<boolean> {
 
 async function withdraw(
   inputCell: Cell,
-  feeAddresses: string[],
   feeRate: FeeRate = FeeRate.NORMAL
 ): Promise<string> {
 
@@ -185,7 +170,7 @@ async function withdraw(
   outputCells[0] = {
     cellOutput: {
       // change amount = prepareAmount - transferAmount - 1000 shannons for tx fee
-      capacity: prepareAmount.sub(1000000).sub(1000).toHexString(),
+      capacity: prepareAmount.sub(feeRate).sub(1000).toHexString(),
       lock: changeLock,
       // lock: preparedCells[0].cellOutput.lock,
     },
@@ -226,18 +211,10 @@ async function withdraw(
   console.log("tx to sign:", tx);
 
   return await sendTransaction(tx);
-
-
-  // const groupedSignature = await owership.signTransaction(transaction);
-
-  // const tx = sealTransaction(txSkeletonWEntries, groupedSignature.map(([script, sign]) => { return sign }));
-
-  // return sendTransaction(tx);
 }
 
 async function unlock(
   withdrawCell: Cell,
-  feeAddresses: string[],
   feeRate: FeeRate = FeeRate.NORMAL
 ): Promise<string> {
   jsonToHump(withdrawCell)
@@ -274,11 +251,8 @@ async function unlock(
     }
   }
 
-
   let txSkeleton = getTransactionSkeleton(offChainLocks[0]);
-
   console.log(offChainLocks, "offChainLocks");
-
 
   txSkeleton = await dao.unlock(
     txSkeleton,
@@ -293,7 +267,6 @@ async function unlock(
   );
 
   console.log(JSON.parse(JSON.stringify(txSkeleton)), "txSkeleton1111");
-
   console.log(preparedCells, "changeLock");
 
   txSkeleton = txSkeleton.update("inputs", (inputs) => {
@@ -305,7 +278,7 @@ async function unlock(
   outputCells[0] = {
     cellOutput: {
       // change amount = prepareAmount - transferAmount - 1000 shannons for tx fee
-      capacity: prepareAmount.sub(10000).toHexString(),
+      capacity: prepareAmount.sub(feeRate).toHexString(),
       lock: changeLock,
       // lock: preparedCells[0].cellOutput.lock,
     },
@@ -337,8 +310,6 @@ async function unlock(
   console.log(JSON.parse(JSON.stringify(txSkeleton)), "txSkeleton3333");
   // console.log(preparedCells, "preparedCells");
 
-  // return ""
-
   const tx = createTransactionFromSkeleton(txSkeleton);
 
   const signatures: any[] = await nexusWallet.fullOwnership.signTransaction({ tx });
@@ -355,24 +326,9 @@ async function unlock(
   console.log("serialized2", serialized2);
 
 
-  // for (let index = 0; index < signatures.length; index++) {
-  //   const [lock, sig] = signatures[index];
-  //   const newWitnessArgs: WitnessArgs = {
-  //     lock: sig,
-  //   };
-  //   const newWitness = bytes.hexify(
-  //     blockchain.WitnessArgs.pack(newWitnessArgs)
-  //   );
-  //   console.log(newWitness, "newWitness____");
-
-  //   tx.witnesses[index] = newWitness;
-  // }
-
   console.log("tx to sign:", tx);
 
   return await sendTransaction(tx);
-
-  // return ""
 
   // txSkeleton = await common.payFeeByFeeRate(
   //   txSkeleton,

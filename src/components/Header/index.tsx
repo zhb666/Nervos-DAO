@@ -12,17 +12,19 @@ const Header: React.FC = () => {
     const UserStoreHox = UserStore();
     const { addWalletList, connectWallet } = UserStoreHox;
     const connectWalletFun = async () => {
-        const nexusWallet = await nexus.connect();
-
-        // const getLiveCells = await nexusWallet.fullOwnership.getLiveCells({});
-        const getOffChainLocks = await nexusWallet.fullOwnership.getOffChainLocks({});
-        console.log(getOffChainLocks);
-
-        addWalletList(true)
+        let nexusWallet: any
+        setTimeout(async () => {
+            nexusWallet = await nexus.connect();
+            const getOffChainLocks = await nexusWallet.fullOwnership.getOffChainLocks({});
+            console.log(getOffChainLocks);
+            addWalletList(true)
+        }, 500)
     }
 
     useEffect(() => {
+        // if (connectWallet) {
         connectWalletFun()
+        // }
     }, [])
 
     return (

@@ -70,7 +70,7 @@ const TransactionsTable: React.FC<Props> = ({
 		// },
 		{
 			title: 'View Transaction',
-			key: 'tx_index',
+			key: 'txhash',
 			align: 'center',
 			render: (_, record) => (
 				<Space size="middle" onClick={() => {
@@ -116,8 +116,7 @@ const TransactionsTable: React.FC<Props> = ({
 	const withdraw = async (daoData: DaoDataObject) => {
 
 		// @ts-ignore
-		// const hash = await withdrawOrUnlock(daoData, privateKeyAgs.address, privateKey, privateKeyAgs.lockScript);
-		const hash = await withdrawOrUnlock(daoData, fromAddr);
+		const hash = await withdrawOrUnlock(daoData);
 
 		if (hash) {
 			notification["success"]({
@@ -167,7 +166,10 @@ const TransactionsTable: React.FC<Props> = ({
 	// get table data
 	const getTableData = async () => {
 		const nexusWallet = await nexus.connect();
+
 		const fullCells = (await nexusWallet.fullOwnership.getLiveCells({})).objects;
+		console.log(fullCells, "fullCells______");
+
 		// const cells = await owership.getLiveCells();
 
 		// @ts-ignore

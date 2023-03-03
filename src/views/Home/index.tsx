@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Script } from '@ckb-lumos/lumos';
+import { BI, Script } from '@ckb-lumos/lumos';
 import { Button, Input, notification } from 'antd';
-import { capacityOf, deposit as daoDeposit } from "../../wallet";
+import { capacityOf, deposit as daoDeposit, getAddress } from "../../wallet";
 
 import "./index.css";
 import { cutValue } from '../../utils';
@@ -10,12 +10,13 @@ import { UserStore } from "../../stores";
 import { minus } from '../../utils/bigNumber';
 import Table from '../../components/DaoTable'
 import nexus from '../../nexus';
+let timer: any
 
 const Home: React.FC = () => {
     const UserStoreHox = UserStore();
     const { connectWallet, addWalletList } = UserStoreHox;
     const [privKey, setPrivKey] = useState(privateKey);
-    const [fromAddr, setFromAddr] = useState(address);
+    const [fromAddr, setFromAddr] = useState("");
     const [fromLock, setFromLock] = useState<Script>();
     const [balance, setBalance] = useState("");
     const [amount, setAmount] = useState<any>("");
@@ -52,13 +53,34 @@ const Home: React.FC = () => {
     }
 
     const updateFromInfo = async () => {
-        const capacity = await capacityOf();
-        setBalance(capacity.toString());
+        // const capacity = await capacityOf();
+        // setBalance(capacity.toString());
+
+        let balance = BI.from(0);
+        const nexusWallet = await nexus.connect();
+        const cells = await nexusWallet.fullOwnership.getLiveCells({});
+        const offChainLocks = await nexusWallet.fullOwnership.getOffChainLocks({})
+
+
+        // let cells = await owership.getLiveCells();
+        for (const cell of cells.objects) {
+            balance = balance.add(cell.cellOutput.capacity);
+        }
+        // return balance;
+        setBalance(balance.toString());
+        setFromLock(offChainLocks[0])
+        setFromAddr(getAddress(offChainLocks[0]))
     };
 
     useEffect(() => {
         if (connectWallet) {
+            timer = setInterval(() => {
+                updateFromInfo();
+            }, 2000)
             updateFromInfo();
+        }
+        return () => {
+            clearInterval(timer)
         }
     }, [connectWallet]);
 
@@ -66,8 +88,8 @@ const Home: React.FC = () => {
         <div className='mian'>
             <h3>Account</h3>
             <ul className='address'>
-                {/* <li>Address :  {connectWallet ? cutValue(fromAddr, 20, 20) : "Please connect Nexus Wallet"}</li> */}
-                <li>Address :  {connectWallet ? "我的钱包" : "Please connect Nexus Wallet"}</li>
+                <li>Address :  {connectWallet ? cutValue(fromAddr, 20, 20) : "Please connect Nexus Wallet"}</li>
+                {/* <li>Address :  {connectWallet ? getAddress(fromLock) : "Please connect Nexus Wallet"}</li> */}
                 <li>Total CKB : {connectWallet ? Number(balance) / 100000000 : "Please connect Nexus Wallet"}</li>
             </ul>
             <h3 className='h3'>Amount </h3>
