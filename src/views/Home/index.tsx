@@ -14,7 +14,7 @@ let timer: any
 
 const Home: React.FC = () => {
     const UserStoreHox = UserStore();
-    const { connectWallet, addWalletList } = UserStoreHox;
+    const { connectWallet, addWalletList, changeBalance } = UserStoreHox;
     const [privKey, setPrivKey] = useState(privateKey);
     const [fromAddr, setFromAddr] = useState("");
     const [fromLock, setFromLock] = useState<Script>();
@@ -68,6 +68,7 @@ const Home: React.FC = () => {
         }
         // return balance;
         setBalance(balance.toString());
+        changeBalance(balance.toString())
         setFromLock(offChainLocks[0])
         setFromAddr(getAddress(offChainLocks[0]))
     };
@@ -88,8 +89,9 @@ const Home: React.FC = () => {
         <div className='mian'>
             <h3>Account</h3>
             <ul className='address'>
-                <li>Address :  {connectWallet ? cutValue(fromAddr, 20, 20) : "Please connect Nexus Wallet"}</li>
+                {/* <li>Address :  {connectWallet ? cutValue(fromAddr, 20, 20) : "Please connect Nexus Wallet"}</li> */}
                 {/* <li>Address :  {connectWallet ? getAddress(fromLock) : "Please connect Nexus Wallet"}</li> */}
+                <li>Address :  {connectWallet ? "我的钱包" : "Please connect Nexus Wallet"}</li>
                 <li>Total CKB : {connectWallet ? Number(balance) / 100000000 : "Please connect Nexus Wallet"}</li>
             </ul>
             <h3 className='h3'>Amount </h3>

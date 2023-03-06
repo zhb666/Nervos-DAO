@@ -8,7 +8,6 @@ import { UserStore } from "../../stores";
 import { getUnlockableAmountsFromCells, withdrawOrUnlock } from "../../wallet"
 
 import './index.css';
-import owership from '../../owership';
 import nexus from '../../nexus';
 
 declare const window: {
@@ -25,18 +24,23 @@ interface Props {
 }
 
 let timer: any = null
+let timercCursor: any = false
+
 
 const TransactionsTable: React.FC<Props> = ({
 	item,
 	off
 }) => {
 	const UserStoreHox = UserStore();
-	const { connectWallet } = UserStoreHox;
+	const { connectWallet, balance } = UserStoreHox;
 	// const { privateKey, privateKeyAgs } = UserStoreHox.script
 	const [privKey, setPrivKey] = useState(privateKey);
 	const [fromAddr, setFromAddr] = useState(address);
 	const [tableData, setTableData] = useState<DaoDataObject[]>([])
 	const [loading, setLoading] = useState(false);
+	const [fullCells, setFullCells] = useState<any>([]);
+	const [lastCursor, setLastCursor] = useState<string>('');
+
 	const [txHash, setTxHash] = useState<string>("");//pending = false  success = true
 
 	const columns: ColumnsType<DaoDataObject> = [
@@ -115,6 +119,7 @@ const TransactionsTable: React.FC<Props> = ({
 
 	const withdraw = async (daoData: DaoDataObject) => {
 
+		setLoading(true)
 		// @ts-ignore
 		const hash = await withdrawOrUnlock(daoData);
 
@@ -127,7 +132,7 @@ const TransactionsTable: React.FC<Props> = ({
 		};
 
 		setTxHash(hash)
-		setLoading(true)
+		setLoading(false)
 	}
 
 	// Judge whether the transaction is success
@@ -162,15 +167,30 @@ const TransactionsTable: React.FC<Props> = ({
 		}
 	}, [item, off])
 
+	const cycleRequestFullCells = async (cursor: string) => {
+		const nexusWallet = await nexus.connect();
+		const fullCellsCursor = (await nexusWallet.fullOwnership.getLiveCells({ cursor: cursor }));
+
+		setFullCells([...fullCells, ...fullCellsCursor.objects])
+
+		if (fullCellsCursor.objects.length < 20) {
+			clearInterval(timercCursor)
+		} else {
+			setLastCursor(fullCellsCursor.cursor)
+		}
+	}
+
+	const getFullCells = async () => {
+		const nexusWallet = await nexus.connect();
+
+		const cells = await nexusWallet.fullOwnership.getLiveCells({});
+		setFullCells(cells.objects)
+		setLastCursor(cells.cursor)
+
+	}
 
 	// get table data
 	const getTableData = async () => {
-		const nexusWallet = await nexus.connect();
-
-		const fullCells = (await nexusWallet.fullOwnership.getLiveCells({})).objects;
-		console.log(fullCells, "fullCells______");
-
-		// const cells = await owership.getLiveCells();
 
 		// @ts-ignore
 		const res = await getUnlockableAmountsFromCells(fullCells)
@@ -179,7 +199,7 @@ const TransactionsTable: React.FC<Props> = ({
 		let Income = 0
 
 		for (let i = 0; i < res.length; i++) {
-			const transaction = await HTTPRPC.getTransaction(res[i].txHash);
+			// const transaction = await HTTPRPC.getTransaction(res[i].txHash);
 			res[i].state = "success"
 			// res[i].timestamp = formatDate(parseInt(transaction.header.timestamp))
 			DaoBalance += Number(res[i].amount)
@@ -191,11 +211,45 @@ const TransactionsTable: React.FC<Props> = ({
 	};
 
 
+
 	useEffect(() => {
-		if (connectWallet) {
+		if (lastCursor) {
+			clearInterval(timercCursor)
+			timercCursor = setInterval(() => {
+				cycleRequestFullCells(lastCursor)
+			}, 200);
+		}
+	}, [lastCursor])
+
+
+	useEffect(() => {
+		if (fullCells) {
+			console.log(fullCells, "change —————— fullCells ")
 			getTableData()
 		}
+	}, [fullCells])
+
+
+	useEffect(() => {
+		if (connectWallet) {
+			getFullCells()
+		}
+		// }, [connectWallet, balance])
 	}, [connectWallet])
+
+
+
+	useEffect(() => {
+		if (item.txHash) {
+			if (off) {
+				// get localStorage
+				// let daoData = JSON.parse(window.localStorage.getItem('daoData'))
+				// setTableData(daoData);
+			} else {
+				setTableData([item, ...tableData]);
+			}
+		}
+	}, [item, off])
 
 
 	return (
