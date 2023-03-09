@@ -1,4 +1,4 @@
-## Nervos-Dao unlock
+## Nervos-Dao 
 
 For most development, the default configuration should be sufficient, but sometimes it is beneficial to speed up certain operations so that results can be seen quickly.
 
@@ -47,3 +47,60 @@ value = 5000  # The unit of measurement is "ms".
 ```ts
 ckb run
 ```
+
+### 4.Download Nexus Wallet [Download Nexus Wallet](https://github.com/ckb-js/nexus)
+Follow the process to log in to the wallet
+
+### 5.Run the Nervos-Dao project
+```ts
+ npm run i
+ npm run start
+ npm run build
+```
+Nervos-Dao connected wallet
+
+#### 5a.find wallet address
+Open the browser console to find the wallet lock
+[Convert to address with lock](https://lumos-website.vercel.app/tools/address-conversion)
+
+#### 5b.transfer to wallet
+Open the terminal and run ./ckb-cli Execute wallet transfer --from-account "You miner address" --to-address "You wallet address" --capacity 10000 --max-tx-fee 0.00001
+
+
+### 6.Change the wallet network node
+Note that you need to change the wallet network configuration to point to the local node
+
+#### 6.a Use Dapp to check whether the transfer is success
+After the transfer is successful, the Dao operation can be followed
+
+### 7. Because the local node contract deployment addresses are different. So you need to pay attention to replace cellDeps
+```ts
+echo '{
+    "id": 2,
+    "jsonrpc": "2.0",
+    "method": "get_block_by_number",
+    "params": [
+        "0x0"
+    ]
+}' \
+| tr -d '\n' \
+| curl -H 'content-type: application/json' -d @- \
+http://localhost:8114
+```
+The 0x2(index) cell output of the 0th transaction of the genesis block is Dao's cell. or Execute
+ 
+```ts
+./ckb list-hashes 
+```
+turn up
+
+```ts
+[[ckb_dev.system_cells]]
+path = "Bundled(specs/cells/dao)"
+```
+If you use type_hash, it is the same output index and hash as the mainnet/testnet
+
+#### 7.a Also need to replace outPoint.txHash in depGroup
+[Refer to this string of code](https://github.com/ckb-js/ckit/blob/develop/packages/ckit/src/__tests__/deploy.ts#L27-L47)
+
+The follow-up is to send the transaction verification Dao normally
