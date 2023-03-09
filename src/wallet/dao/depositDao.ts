@@ -1,16 +1,17 @@
 import { dao, common } from "@ckb-lumos/common-scripts";
 import { createTransactionFromSkeleton, sealTransaction } from "@ckb-lumos/helpers";
-import { DAOCELLSIZE, RPC_NETWORK } from "../../config";
+import { DAOCELLSIZE, HTTPRPC, RPC_NETWORK } from "../../config";
 import { FeeRate } from "../../type";
 import { getTransactionSkeleton } from "../customCellProvider";
 import owership from '../../owership';
 import { sendTransaction } from '../sendTransaction';
 // import { json } from 'stream/consumers';
-import { BI, Cell, CellDep, commons, config, helpers, Indexer, Script, WitnessArgs } from '@ckb-lumos/lumos';
+import { BI, Cell, CellDep, commons, config, helpers, Indexer, Script, utils, WitnessArgs } from '@ckb-lumos/lumos';
 import { bytes } from "@ckb-lumos/codec";
 import { blockchain } from "@ckb-lumos/base";
 import nexus from '../../nexus';
 import { getAddress } from '../index';
+import { nonNullable } from './utils';
 
 export async function deposit(
   amount: bigint,
@@ -23,6 +24,38 @@ export async function deposit(
   const nexusWallet = await nexus.connect();
   const offChainLocks = await nexusWallet.fullOwnership.getOffChainLocks({})
   const fullCells = (await nexusWallet.fullOwnership.getLiveCells({})).objects;
+
+  // await HTTPRPC.getBlockByNumber("0x0");
+
+  const genesisBlock = await HTTPRPC.getBlockByNumber('0x0');
+
+  if (!genesisBlock) throw new Error('cannot load genesis block');
+
+  const secp256k1DepTxHash = nonNullable(genesisBlock.transactions[1]).hash;
+  const typeScript = nonNullable(nonNullable(genesisBlock.transactions[0]).outputs[1]).type;
+
+  if (!secp256k1DepTxHash) throw new Error('Cannot load secp256k1 transaction');
+  if (!typeScript) throw new Error('cannot load secp256k1 type script');
+
+  const secp256k1TypeHash = utils.computeScriptHash(typeScript);
+
+  //   console.log({
+  //     HASH_TYPE: 'type',
+  //     CODE_HASH: secp256k1TypeHash,
+  //     INDEX: '0x0',
+  //     TX_HASH: secp256k1DepTxHash,
+  //     DEP_TYPE: 'dep_group',
+  //   })
+
+  // //   {
+  // //     "HASH_TYPE": "type",
+  // //     "CODE_HASH": "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
+  // //     "INDEX": "0x0",
+  // //     "TX_HASH": "0x530d9f9de45fdcda8a2c7df86007711d932a43277057baf0aead7f88eaec01e2",
+  // //     "DEP_TYPE": "dep_group"
+  // // }
+
+  // return ""
 
 
   try {
@@ -47,7 +80,9 @@ export async function deposit(
       }
     }
 
-    const indexer = new Indexer("https://testnet.ckb.dev");
+    // const indexer = new Indexer("https://testnet.ckb.dev");
+    const indexer = new Indexer("http://127.0.0.1:8114");
+
     let txSkeleton = helpers.TransactionSkeleton({ cellProvider: indexer });
     txSkeleton = txSkeleton.update("inputs", (inputs) => {
       return inputs.concat(...preparedCells);
@@ -101,14 +136,20 @@ export async function deposit(
     let cellDepsOutPoint = [
       {
         outPoint: {
-          txHash: "0x8f8c79eb6671709633fe6a46de93c0fedc9c1b8a6527a18d3983879542635c9f",
+          // txHash: "0x8f8c79eb6671709633fe6a46de93c0fedc9c1b8a6527a18d3983879542635c9f",
+          // txHash: "0x530d9f9de45fdcda8a2c7df86007711d932a43277057baf0aead7f88eaec01e2",
+          // txHash: "0x5f4345733735a12e0000c16ff2862300ba73e3e0940500000099f54b01fbfe06",
+          txHash: "0x76c935b7d7fc23998776d155def89808be87077052b5248546c82fde3943b1da",
           index: "0x2"
         },
         depType: "code"
       },
       {
         outPoint: {
-          txHash: "0xf8de3bb47d055cdf460d93a2a6e1b05f7432f9777c8c474abf4eec1d4aee5d37",
+          // txHash: "0xf8de3bb47d055cdf460d93a2a6e1b05f7432f9777c8c474abf4eec1d4aee5d37",
+          // txHash: "0x5f4345733735a12e0000c16ff2862300ba73e3e0940500000099f54b01fbfe06",
+          txHash: "0x530d9f9de45fdcda8a2c7df86007711d932a43277057baf0aead7f88eaec01e2",
+          // txHash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
           index: "0x0"
         },
         depType: "depGroup"

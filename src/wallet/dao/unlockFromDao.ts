@@ -159,11 +159,16 @@ async function withdraw(
     config: RPC_NETWORK
   });
 
+
+
   console.log(preparedCells, "changeLock");
 
   txSkeleton = txSkeleton.update("inputs", (inputs) => {
     return inputs.concat(...preparedCells);
   });
+
+  console.log(JSON.parse(JSON.stringify(txSkeleton)), "txSkeleton111");
+
 
   const outputCells: Cell[] = [];
 
@@ -184,6 +189,62 @@ async function withdraw(
   txSkeleton = txSkeleton.update("witnesses", (witnesses) =>
     witnesses.concat("0x55000000100000005500000055000000410000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
   );
+
+  // TODO Need to config
+  let cellDepsOutPoint = [
+    {
+      outPoint: {
+        // txHash: "0x8f8c79eb6671709633fe6a46de93c0fedc9c1b8a6527a18d3983879542635c9f",
+        // txHash: "0x530d9f9de45fdcda8a2c7df86007711d932a43277057baf0aead7f88eaec01e2",
+        // txHash: "0x5f4345733735a12e0000c16ff2862300ba73e3e0940500000099f54b01fbfe06",
+        txHash: "0x76c935b7d7fc23998776d155def89808be87077052b5248546c82fde3943b1da",
+        index: "0x2"
+      },
+      depType: "code"
+    },
+    {
+      outPoint: {
+        // txHash: "0xf8de3bb47d055cdf460d93a2a6e1b05f7432f9777c8c474abf4eec1d4aee5d37",
+        // txHash: "0x5f4345733735a12e0000c16ff2862300ba73e3e0940500000099f54b01fbfe06",
+        txHash: "0x530d9f9de45fdcda8a2c7df86007711d932a43277057baf0aead7f88eaec01e2",
+        // txHash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
+        index: "0x0"
+      },
+      depType: "depGroup"
+    }
+  ]
+
+  let txSkeletonChangeCellDeps = helpers.transactionSkeletonToObject(txSkeleton)
+  console.log(txSkeletonChangeCellDeps, "consxx________111")
+
+  // @ts-ignore
+  txSkeletonChangeCellDeps.cellDeps = cellDepsOutPoint
+  console.log(txSkeletonChangeCellDeps, "consxx________222")
+
+
+  txSkeleton = helpers.objectToTransactionSkeleton(txSkeletonChangeCellDeps)
+
+  // @ts-ignore
+  // for (let i = 0; i < cellDepsOutPoint.length; i++) {
+  //   txSkeleton = txSkeleton.update("witnesses", (witnesses) =>
+  //     witnesses.set(i, secp256k1Witness)
+  //   );
+
+  //   txSkeleton = txSkeleton.update("cellDeps", (cellDeps) => {
+  //     return cellDeps.set(i,cellDepsOutPoint);
+  //   });
+  // }
+
+
+  // @ts-ignore
+  // txSkeleton = txSkeleton.update("cellDeps", (cellDeps) => {
+  //   return []
+  // });
+
+  // @ts-ignore
+  // txSkeleton = txSkeleton.update("cellDeps", (cellDeps) => {
+  //   return cellDeps.concat(...cellDepsOutPoint)
+  // });
 
   console.log(JSON.parse(JSON.stringify(txSkeleton)), "txSkeleton");
   // console.log(preparedCells, "preparedCells");
@@ -293,6 +354,41 @@ async function unlock(
     witnesses.concat("0x61000000100000005500000061000000410000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000")
   );
 
+
+  // TODO Need to config
+  let cellDepsOutPoint = [
+    {
+      outPoint: {
+        // txHash: "0x8f8c79eb6671709633fe6a46de93c0fedc9c1b8a6527a18d3983879542635c9f",
+        // txHash: "0x530d9f9de45fdcda8a2c7df86007711d932a43277057baf0aead7f88eaec01e2",
+        // txHash: "0x5f4345733735a12e0000c16ff2862300ba73e3e0940500000099f54b01fbfe06",
+        txHash: "0x76c935b7d7fc23998776d155def89808be87077052b5248546c82fde3943b1da",
+        index: "0x2"
+      },
+      depType: "code"
+    },
+    {
+      outPoint: {
+        // txHash: "0xf8de3bb47d055cdf460d93a2a6e1b05f7432f9777c8c474abf4eec1d4aee5d37",
+        // txHash: "0x5f4345733735a12e0000c16ff2862300ba73e3e0940500000099f54b01fbfe06",
+        txHash: "0x530d9f9de45fdcda8a2c7df86007711d932a43277057baf0aead7f88eaec01e2",
+        // txHash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
+        index: "0x0"
+      },
+      depType: "depGroup"
+    }
+  ]
+
+  let txSkeletonChangeCellDeps = helpers.transactionSkeletonToObject(txSkeleton)
+  console.log(txSkeletonChangeCellDeps, "consxx________111")
+
+  // @ts-ignore
+  txSkeletonChangeCellDeps.cellDeps = cellDepsOutPoint
+  console.log(txSkeletonChangeCellDeps, "consxx________222")
+
+
+  txSkeleton = helpers.objectToTransactionSkeleton(txSkeletonChangeCellDeps)
+
   // const witnessArgs: WitnessArgs = {
   //   /* 65-byte zeros in hex */
   //   lock: "0x61000000100000005500000061000000410000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000",
@@ -316,14 +412,31 @@ async function unlock(
 
   console.log("signatures", signatures);
 
-  const indexOfOriginalDeposit = 0; // change to actual index
-  const witnessArgs2: WitnessArgs = {
-    /* 65-byte zeros in hex */
-    lock: bytes.hexify(new Uint8Array(65)),
-    inputType: bytes.hexify(number.Uint64LE.pack(indexOfOriginalDeposit)),
-  };
-  const serialized2 = bytes.hexify(blockchain.WitnessArgs.pack(witnessArgs2));
-  console.log("serialized2", serialized2);
+  // const indexOfOriginalDeposit = 0; // change to actual index
+  // const witnessArgs2: WitnessArgs = {
+  //   /* 65-byte zeros in hex */
+  //   lock: bytes.hexify(new Uint8Array(65)),
+  //   inputType: bytes.hexify(number.Uint64LE.pack(indexOfOriginalDeposit)),
+  // };
+  // const serialized2 = bytes.hexify(blockchain.WitnessArgs.pack(witnessArgs2));
+
+  // console.log(serialized2, "serialized2____");
+
+
+
+  for (let index = 0; index < signatures.length; index++) {
+    const [lock, sig] = signatures[index];
+    const newWitnessArgs: WitnessArgs = {
+      lock: sig,
+      inputType: bytes.hexify(number.Uint64.pack(0)),
+    };
+    const newWitness = bytes.hexify(
+      blockchain.WitnessArgs.pack(newWitnessArgs)
+    );
+    tx.witnesses[index] = newWitness;
+  }
+
+
 
 
   console.log("tx to sign:", tx);
