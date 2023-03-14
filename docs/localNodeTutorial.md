@@ -61,7 +61,7 @@ Nervos-Dao connected wallet
 
 #### 5a.find wallet address
 Open the browser console to find the wallet lock
-[Convert to address with lock](https://lumos-website.vercel.app/tools/address-conversion)
+[Change lock to address](https://lumos-website.vercel.app/tools/address-conversion)
 
 #### 5b.transfer to wallet
 Open the terminal and run ./ckb-cli Execute wallet transfer --from-account "You miner address" --to-address "You wallet address" --capacity 10000 --max-tx-fee 0.00001
@@ -104,3 +104,6 @@ If you use type_hash, it is the same output index and hash as the mainnet/testne
 [Refer to this string of code](https://github.com/ckb-js/ckit/blob/develop/packages/ckit/src/__tests__/deploy.ts#L27-L47)
 
 The follow-up is to send the transaction verification Dao normally
+
+[Nervos-Dao rfcs Detailed reference](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md)
+
