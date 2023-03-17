@@ -11,6 +11,7 @@ import { bytes } from "@ckb-lumos/codec";
 import { blockchain } from "@ckb-lumos/base";
 import nexus from '../../nexus';
 import { getAddress } from '../index';
+import { appendScriptDeps } from "./cellDepsLoader";
 
 export async function deposit(
   amount: bigint,
@@ -24,10 +25,7 @@ export async function deposit(
   const offChainLocks = await nexusWallet.fullOwnership.getOffChainLocks({})
   const fullCells = (await nexusWallet.fullOwnership.getLiveCells({})).objects;
 
-
   try {
-    console.log(fullCells, "fullCells");
-
     const changeLock: Script = offChainLocks[0];
     console.log("changeLock", changeLock);
     console.log("transfer amount", amount);
@@ -47,7 +45,8 @@ export async function deposit(
       }
     }
 
-    const indexer = new Indexer("https://testnet.ckb.dev");
+    // const indexer = new Indexer("https://testnet.ckb.dev");
+    const indexer = new Indexer("http://localhost:8114");
     let txSkeleton = helpers.TransactionSkeleton({ cellProvider: indexer });
     txSkeleton = txSkeleton.update("inputs", (inputs) => {
       return inputs.concat(...preparedCells);
@@ -78,46 +77,8 @@ export async function deposit(
       return outputs.concat(...outputCells);
     });
 
-    //   const cellDepsOutPoint:CellDep = []
-    //   cellDepsOutPoint[0] = {
-    //     outPoint: {
-    //       txHash:
-    //         config.predefined.AGGRON4.SCRIPTS.DAO.TX_HASH,
-    //       index: config.predefined.AGGRON4.SCRIPTS.DAO.INDEX,
-    //     },
-    //     depType:
-    //       config.predefined.AGGRON4.SCRIPTS.DAO.DEP_TYPE,
-    //   }
-    //   cellDepsOutPoint[1] = {
-    //     "outPoint": {
-    //         "txHash": "0xf8de3bb47d055cdf460d93a2a6e1b05f7432f9777c8c474abf4eec1d4aee5d37",
-    //         "index": "0x0"
-    //     },
-    //     "depType": "dep_group"
-    // }
-
-
-    // TODO Need to config
-    let cellDepsOutPoint = [
-      {
-        outPoint: {
-          txHash: "0x8f8c79eb6671709633fe6a46de93c0fedc9c1b8a6527a18d3983879542635c9f",
-          index: "0x2"
-        },
-        depType: "code"
-      },
-      {
-        outPoint: {
-          txHash: "0xf8de3bb47d055cdf460d93a2a6e1b05f7432f9777c8c474abf4eec1d4aee5d37",
-          index: "0x0"
-        },
-        depType: "depGroup"
-      }
-    ]
-    // @ts-ignore
-    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) => {
-      return cellDeps.concat(...cellDepsOutPoint);
-    });
+    txSkeleton = await appendScriptDeps({ txSkeleton, nodeUrl: 'http://localhost:8114' });
+    
     for (let i = 0; i < preparedCells.length; i++) {
       txSkeleton = txSkeleton.update("witnesses", (witnesses) =>
         witnesses.push("0x")
@@ -164,6 +125,4 @@ export async function deposit(
   }
 
   return txHash
-
-  const address = getAddress(offChainLocks[0])
 }

@@ -30,6 +30,7 @@ import { getTransactionSkeleton } from "../customCellProvider";
 import { jsonToHump } from '../../utils/pubilc';
 import { log } from 'console';
 import nexus from '../../nexus';
+import { loadScriptDeps } from './cellDepsLoader';
 
 const { ScriptValue } = values;
 
@@ -155,8 +156,16 @@ async function withdraw(
 
   let txSkeleton = getTransactionSkeleton(offChainLocks[0]);
 
+  const onChainScripts = await loadScriptDeps({ nodeUrl: 'http://localhost:8114' })
   txSkeleton = await dao.withdraw(txSkeleton, inputCell, undefined, {
-    config: RPC_NETWORK
+    config: {
+      PREFIX: RPC_NETWORK.PREFIX,
+      SCRIPTS: {
+        ...RPC_NETWORK.SCRIPTS,
+        DAO: onChainScripts.DAO,
+        SECP256K1_BLAKE160: onChainScripts.SECP256K1_BLAKE160,
+      },
+    }
   });
 
   console.log(preparedCells, "changeLock");
@@ -254,6 +263,7 @@ async function unlock(
   let txSkeleton = getTransactionSkeleton(offChainLocks[0]);
   console.log(offChainLocks, "offChainLocks");
 
+  const onChainScripts = await loadScriptDeps({ nodeUrl: 'http://localhost:8114' })
   txSkeleton = await dao.unlock(
     txSkeleton,
     depositCell,
@@ -261,8 +271,14 @@ async function unlock(
     address,
     address,
     {
-      config: RPC_NETWORK
-      // RpcClient: RpcMocker as any
+      config: {
+        PREFIX: RPC_NETWORK.PREFIX,
+        SCRIPTS: {
+          ...RPC_NETWORK.SCRIPTS,
+          DAO: onChainScripts.DAO,
+          SECP256K1_BLAKE160: onChainScripts.SECP256K1_BLAKE160,
+        },
+      }
     }
   );
 

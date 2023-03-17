@@ -231,11 +231,11 @@ export async function getUnlockableAmountsFromCells(
   cells: Cell[]
 ): Promise<DAOUnlockableAmount[]> {
 
-  console.log(cells, "cells__-");
+  // console.log(cells, "cells__-");
 
   const unlockableAmounts: DAOUnlockableAmount[] = [];
   const filtCells = await filterDAOCells(cells);
-  console.log(filtCells, "filtCells_____");
+  // console.log(filtCells, "filtCells_____");
 
   const currentBlockHeader = await getCurrentBlockHeader();
   const currentEpoch = since.parseEpoch(currentBlockHeader.epoch);
