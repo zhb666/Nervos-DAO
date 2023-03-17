@@ -24,7 +24,7 @@ Modify the `permanent_difficulty_in_dummy` parameter in the specs/dev.toml file 
 
 ```toml
 [params]
-genesis_epoch_length = 10
+genesis_epoch_length = 1
 permanent_difficulty_in_dummy = true
 ```
 
@@ -76,7 +76,7 @@ Note that you need to change the wallet network configuration to point to the lo
 After the transfer is successful, the Dao operation can be followed
 
 ### 7. Because the local node contract deployment addresses are different. So you need to pay attention to replace cellDeps
-```toml
+```ts
 echo '{
     "id": 2,
     "jsonrpc": "2.0",
