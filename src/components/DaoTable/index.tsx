@@ -224,7 +224,7 @@ const TransactionsTable: React.FC<Props> = ({
 
 	useEffect(() => {
 		if (fullCells) {
-			console.log(fullCells, "change —————— fullCells ")
+			// console.log(fullCells, "change —————— fullCells ")
 			getTableData()
 		}
 	}, [fullCells])
