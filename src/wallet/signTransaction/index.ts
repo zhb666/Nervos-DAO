@@ -1,7 +1,7 @@
-import { sealTransaction,TransactionSkeletonType,LiveCellFetcher,createTransactionSkeleton } from "@ckb-lumos/helpers";
+import { sealTransaction, TransactionSkeletonType, LiveCellFetcher, createTransactionSkeleton } from "@ckb-lumos/helpers";
 import { commons, hd, OutPoint, Script, Transaction } from "@ckb-lumos/lumos";
 import { log } from 'console';
-import { RPC_NETWORK ,privateKey} from "../../config";
+import { RPC_NETWORK, privateKey } from "../../config";
 import owership from '../../owership';
 import { GroupedSignature, Signature } from '../../type';
 // const txSkeleton = require("../../mock/txSkeleton.json");
@@ -11,7 +11,7 @@ export async function signTransaction(
   transaction: Transaction,
 ): Promise<GroupedSignature> {
   // @ts-ignore
-  const txSkeleton:TransactionSkeletonType = JSON.parse(window.localStorage.getItem('txSkeleton'))
+  const txSkeleton: TransactionSkeletonType = JSON.parse(window.localStorage.getItem('txSkeleton'))
   const txSkeletonObject: TransactionSkeletonType = txSkeleton
   const privateKeys: string[] = [privateKey]
   const script = await owership.getOffChainLocks()
@@ -19,7 +19,7 @@ export async function signTransaction(
   // @ts-ignore
   const mockFetcher: LiveCellFetcher = (outPoint: { txHash: string; index: any; }) =>
     txSkeletonObject.inputs.find(
-  // @ts-ignore
+      // @ts-ignore
       (input: { outPoint: { txHash: string; index: string; }; }) =>
         input.outPoint?.txHash === outPoint.txHash &&
         input.outPoint?.index === outPoint.index
@@ -47,7 +47,7 @@ export async function signTransaction(
     throw new Error("Invalid private keys length");
   }
 
-  let signatures:Signature = "";
+  let signatures: Signature = "";
   // const signatures = [];
   for (let i = 0; i < privateKeys.length; i += 1) {
     const entry = txSkeletonWEntries.get("signingEntries").get(i);
@@ -56,8 +56,8 @@ export async function signTransaction(
     signatures = (hd.key.signRecoverable(entry.message, privateKeys[i]));
   }
 
-  return [[script,signatures]]
- 
+  return [[script, signatures]]
+
   // const tx = sealTransaction(txSkeletonWEntries, signatures);
   // return tx
 

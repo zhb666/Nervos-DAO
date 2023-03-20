@@ -77,7 +77,14 @@ lock.hash_type = "type"
 
 ### 6.更改钱包网络节点
 
-请注意，您需要更改钱包网络配置以指向本地节点。
+请注意，您需要更改钱包网络配置以指向本地节点
+
+还需要更改 Nervos-Dao  `src/config`
+```ts
+const TEST_CKB_RPC_URL = "http://localhost:8114";
+const TEST_CKB_INDEXER_URL = "http://localhost:8114";
+``` 
+
 
 #### 6.a 使用 Dapp 检查转账是否成功
 转账成功后，Dapp 会有余额展示 
@@ -114,5 +121,5 @@ path = "Bundled(specs/cells/dao)"
 
 后续是正常发送交易并验证 Dao。
 
-### 8 [具体资料可以参考](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md)
+### 8. [具体资料可以参考](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md)
 
