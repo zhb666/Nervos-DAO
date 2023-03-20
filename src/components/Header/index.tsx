@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Button, Input } from 'antd';
 import { UserStore } from "../../stores";
-import { address } from '../../config';
 import { cutValue } from '../../utils';
 import nexus from "../../nexus"
 
 import "./index.css";
-import { log } from 'console';
 
 const Header: React.FC = () => {
     const UserStoreHox = UserStore();
@@ -22,9 +20,7 @@ const Header: React.FC = () => {
     }
 
     useEffect(() => {
-        // if (connectWallet) {
         connectWalletFun()
-        // }
     }, [])
 
     return (

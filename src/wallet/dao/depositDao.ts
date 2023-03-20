@@ -1,16 +1,10 @@
-import { dao, common } from "@ckb-lumos/common-scripts";
-import { createTransactionFromSkeleton, sealTransaction } from "@ckb-lumos/helpers";
-import { DAOCELLSIZE, RPC_NETWORK } from "../../config";
+import { DAOCELLSIZE, DAOTYPE, DEPOSITDAODATA, RPC_NETWORK, TEST_CKB_RPC_URL, TEST_INDEXER } from "../../config";
 import { FeeRate } from "../../type";
-import { getTransactionSkeleton } from "../customCellProvider";
-import owership from '../../owership';
 import { sendTransaction } from '../sendTransaction';
-// import { json } from 'stream/consumers';
 import { BI, Cell, CellDep, commons, config, helpers, Indexer, Script, WitnessArgs } from '@ckb-lumos/lumos';
 import { bytes } from "@ckb-lumos/codec";
 import { blockchain } from "@ckb-lumos/base";
 import nexus from '../../nexus';
-import { getAddress } from '../index';
 import { appendScriptDeps } from "./cellDepsLoader";
 
 export async function deposit(
@@ -45,9 +39,7 @@ export async function deposit(
       }
     }
 
-    // const indexer = new Indexer("https://testnet.ckb.dev");
-    const indexer = new Indexer("http://localhost:8114");
-    let txSkeleton = helpers.TransactionSkeleton({ cellProvider: indexer });
+    let txSkeleton = helpers.TransactionSkeleton({ cellProvider: TEST_INDEXER });
     txSkeleton = txSkeleton.update("inputs", (inputs) => {
       return inputs.concat(...preparedCells);
     });
@@ -57,13 +49,9 @@ export async function deposit(
       cellOutput: {
         capacity: transferAmountBI.toHexString(),
         lock: changeLock,
-        "type": {
-          "codeHash": "0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e",
-          "args": "0x",
-          "hashType": "type"
-        }
+        type: DAOTYPE,
       },
-      data: "0x0000000000000000",
+      data: DEPOSITDAODATA,
     };
     outputCells[1] = {
       cellOutput: {
@@ -77,8 +65,8 @@ export async function deposit(
       return outputs.concat(...outputCells);
     });
 
-    txSkeleton = await appendScriptDeps({ txSkeleton, nodeUrl: 'http://localhost:8114' });
-    
+    txSkeleton = await appendScriptDeps({ txSkeleton, nodeUrl: TEST_CKB_RPC_URL });
+
     for (let i = 0; i < preparedCells.length; i++) {
       txSkeleton = txSkeleton.update("witnesses", (witnesses) =>
         witnesses.push("0x")
@@ -99,7 +87,6 @@ export async function deposit(
       );
     }
 
-    console.log(JSON.parse(JSON.stringify(txSkeleton)), "txSkeleton");
 
     const tx = helpers.createTransactionFromSkeleton(txSkeleton);
     console.log("tx to sign:", tx);

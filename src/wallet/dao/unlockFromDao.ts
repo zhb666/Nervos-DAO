@@ -3,14 +3,11 @@ import { Cell, Script } from "@ckb-lumos/base";
 import { since, helpers, WitnessArgs, BI } from "@ckb-lumos/lumos";
 import { dao, common } from "@ckb-lumos/common-scripts";
 import { values } from "@ckb-lumos/base";
-import { commons } from '@ckb-lumos/lumos';
 import { bytes, number } from "@ckb-lumos/codec";
 import { blockchain } from "@ckb-lumos/base";
 import {
-  TransactionSkeleton,
   TransactionSkeletonType,
   createTransactionFromSkeleton,
-  sealTransaction
 } from "@ckb-lumos/helpers";
 import {
   filterDAOCells,
@@ -24,11 +21,9 @@ import {
 } from "./index";
 import { getAddress, sendTransaction, signTransaction } from "../index";
 import { DAOUnlockableAmount, FeeRate } from "../../type";
-import owership from '../../owership';
-import { DEPOSITDAODATA, RPC_NETWORK, TEST_INDEXER } from "../../config/index";
+import { DEPOSITDAODATA, RPC_NETWORK, TEST_INDEXER, TEST_CKB_RPC_URL } from "../../config/index";
 import { getTransactionSkeleton } from "../customCellProvider";
 import { jsonToHump } from '../../utils/pubilc';
-import { log } from 'console';
 import nexus from '../../nexus';
 import { loadScriptDeps } from './cellDepsLoader';
 
@@ -46,16 +41,13 @@ export async function withdrawOrUnlock(
 ): Promise<string> {
   const nexusWallet = await nexus.connect();
   const fullCells = (await nexusWallet.fullOwnership.getLiveCells({})).objects;
-  // const res = await owership.getLiveCells();
   // @ts-ignore
   const cells = await filterDAOCells(fullCells);
-  console.log(cells, "filterDAOCells");
 
   const cell = await findCellFromUnlockableAmountAndCells(
     unlockableAmount,
     cells
   );
-  console.log(cell, "cell_____");
 
   if (!cell) {
     throw new Error("Cell related to unlockable amount not found!");
@@ -128,7 +120,6 @@ async function withdraw(
   feeRate: FeeRate = FeeRate.NORMAL
 ): Promise<string> {
 
-  let txHash = ''
   const nexusWallet = await nexus.connect();
   const offChainLocks = await nexusWallet.fullOwnership.getOffChainLocks({})
   const fullCells = (await nexusWallet.fullOwnership.getLiveCells({})).objects;
@@ -156,7 +147,7 @@ async function withdraw(
 
   let txSkeleton = getTransactionSkeleton(offChainLocks[0]);
 
-  const onChainScripts = await loadScriptDeps({ nodeUrl: 'http://localhost:8114' })
+  const onChainScripts = await loadScriptDeps({ nodeUrl: TEST_CKB_RPC_URL })
   txSkeleton = await dao.withdraw(txSkeleton, inputCell, undefined, {
     config: {
       PREFIX: RPC_NETWORK.PREFIX,
@@ -194,10 +185,7 @@ async function withdraw(
     witnesses.concat("0x55000000100000005500000055000000410000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
   );
 
-  console.log(JSON.parse(JSON.stringify(txSkeleton)), "txSkeleton");
-  // console.log(preparedCells, "preparedCells");
 
-  // return ""
 
   const tx = createTransactionFromSkeleton(txSkeleton);
   console.log("tx to sign:", tx);
@@ -262,7 +250,7 @@ async function unlock(
   console.log(offChainLocks, "offChainLocks");
 
   // TODO: make me configurable
-  const onChainScripts = await loadScriptDeps({ nodeUrl: 'http://localhost:8114' })
+  const onChainScripts = await loadScriptDeps({ nodeUrl: TEST_CKB_RPC_URL })
   txSkeleton = await dao.unlock(
     txSkeleton,
     depositCell,

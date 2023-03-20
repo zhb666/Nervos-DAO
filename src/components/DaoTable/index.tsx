@@ -33,9 +33,6 @@ const TransactionsTable: React.FC<Props> = ({
 }) => {
 	const UserStoreHox = UserStore();
 	const { connectWallet, balance } = UserStoreHox;
-	// const { privateKey, privateKeyAgs } = UserStoreHox.script
-	const [privKey, setPrivKey] = useState(privateKey);
-	const [fromAddr, setFromAddr] = useState(address);
 	const [tableData, setTableData] = useState<DaoDataObject[]>([])
 	const [loading, setLoading] = useState(false);
 	const [fullCells, setFullCells] = useState<any>([]);
@@ -206,7 +203,6 @@ const TransactionsTable: React.FC<Props> = ({
 			Income += Number(res[i].compensation)
 		}
 
-		// window.localStorage.setItem("daoData", JSON.stringify(res))
 		setTableData(res.reverse());
 	};
 
@@ -224,7 +220,6 @@ const TransactionsTable: React.FC<Props> = ({
 
 	useEffect(() => {
 		if (fullCells) {
-			// console.log(fullCells, "change —————— fullCells ")
 			getTableData()
 		}
 	}, [fullCells])
@@ -256,11 +251,6 @@ const TransactionsTable: React.FC<Props> = ({
 		<div className='transactionsTable'>
 			<Spin spinning={loading}>
 				<Table rowKey={record => record.txHash}
-					// onRow={record => {
-					// 	return {
-					// 		onClick: event => { getHash(record) },
-					// 	};
-					// }}
 					columns={columns} dataSource={tableData} />
 			</Spin>
 			{/* <Button onClick={getTableData} className='button' type="primary">next</Button> */}
