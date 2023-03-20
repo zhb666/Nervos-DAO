@@ -1,4 +1,3 @@
-## Thank you for sharing your technical document with me. Based on my understanding of the content, here is a possible edited version with some modifications and corrections:
 ## Nervos-Dao 
 
 For most development, the default configuration should be sufficient. However, in some cases, it may be beneficial to speed up certain operations to obtain results quickly. In this guide, we will go through the steps to adjust the configuration to test the withdrawal process of DAO locally and quickly skip the epoch.
@@ -91,7 +90,7 @@ http://localhost:8114
 ```
 The 0x2(index) cell output of the 0th transaction of the genesis block is Dao's cell. or Execute
  
-```toml
+```ts
 ./ckb list-hashes 
 ```
 turn up
