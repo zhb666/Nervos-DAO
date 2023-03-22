@@ -19,7 +19,7 @@ import {
   getTransactionFromHash,
   getBlockHeaderFromHash
 } from "./index";
-import { getAddress, sendTransaction, signTransaction } from "../index";
+import { getAddress, sendTransaction } from "../index";
 import { DAOUnlockableAmount, FeeRate } from "../../type";
 import { DEPOSITDAODATA, RPC_NETWORK, TEST_INDEXER, TEST_CKB_RPC_URL } from "../../config/index";
 import { getTransactionSkeleton } from "../customCellProvider";
@@ -31,7 +31,6 @@ const { ScriptValue } = values;
 
 export enum AddressScriptType {
   SECP256K1_BLAKE160 = "SECP256K1_BLAKE160",
-  SUDT = "SUDT",
   DAO = "DAO"
 }
 
@@ -124,9 +123,7 @@ async function withdraw(
   const offChainLocks = await nexusWallet.fullOwnership.getOffChainLocks({})
   const fullCells = (await nexusWallet.fullOwnership.getLiveCells({})).objects;
 
-
   const changeLock: Script = offChainLocks[0];
-  console.log(changeLock, "changeLock");
 
   const preparedCells: Cell[] = [];
   const transferAmountBI = BI.from(1).mul(10 ** 8);
@@ -159,8 +156,6 @@ async function withdraw(
     }
   });
 
-  console.log(preparedCells, "changeLock");
-
   txSkeleton = txSkeleton.update("inputs", (inputs) => {
     return inputs.concat(...preparedCells);
   });
@@ -172,7 +167,6 @@ async function withdraw(
       // change amount = prepareAmount - transferAmount - 1000 shannons for tx fee
       capacity: prepareAmount.sub(feeRate).sub(1000).toHexString(),
       lock: changeLock,
-      // lock: preparedCells[0].cellOutput.lock,
     },
     data: "0x",
   };
@@ -180,11 +174,9 @@ async function withdraw(
     return outputs.concat(...outputCells);
   });
 
-  // TODO bytes.hexify(blockchain.witness.pack({ lock: bytes.hexify(Buffer.alloc(65))}))
   txSkeleton = txSkeleton.update("witnesses", (witnesses) =>
-    witnesses.concat("0x55000000100000005500000055000000410000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+    witnesses.concat(bytes.hexify(blockchain.WitnessArgs.pack({ lock: bytes.hexify(Buffer.alloc(65)) })))
   );
-
 
 
   const tx = createTransactionFromSkeleton(txSkeleton);
@@ -225,10 +217,9 @@ async function unlock(
   const depositCell = await getDepositCellFromWithdrawCell(withdrawCell);
 
   const address = getAddress(offChainLocks[0])
-  // TODO
-  // if (!(await isCellUnlockable(withdrawCell))) {
-  //   throw new Error("Cell can not be unlocked. Minimum time is 30 days.");
-  // }
+  if (!(await isCellUnlockable(withdrawCell))) {
+    throw new Error("Cell can not be unlocked. Minimum time is 30 days.");
+  }
 
   const preparedCells: Cell[] = [];
   const transferAmountBI = BI.from(1).mul(10 ** 8);
@@ -247,7 +238,6 @@ async function unlock(
   }
 
   let txSkeleton = getTransactionSkeleton(offChainLocks[0]);
-  console.log(offChainLocks, "offChainLocks");
 
   // TODO: make me configurable
   const onChainScripts = await loadScriptDeps({ nodeUrl: TEST_CKB_RPC_URL })
@@ -374,17 +364,3 @@ function getLockFromAddress(address: string): Script {
   return helpers.parseAddress(address, { config: RPC_NETWORK });
 }
 
-// function getNextAddress(): string {
-//   return getAddress(firstRIndexWithoutTxs, AddressType.Receiving);
-// }
-
-// // Gets address from a specific accountId, addressType and script type
-// function getAddress(accountId = 0, addressType: AddressType, script: AddressScriptType = AddressScriptType.SECP256K1_BLAKE160): string {
-//     const key = `${accountId}-${addressType}-${script}`;
-//     if (!this.addressMap[key]) {
-//         const address = this.connection.getAddressFromLock(this.getLock(accountId, addressType, script));
-//         this.addressMap[key] = address;
-//     }
-
-//     return this.addressMap[key];
-// }

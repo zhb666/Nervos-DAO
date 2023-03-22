@@ -21,8 +21,6 @@ export async function deposit(
 
   try {
     const changeLock: Script = offChainLocks[0];
-    console.log("changeLock", changeLock);
-    console.log("transfer amount", amount);
     const preparedCells: any[] = [];
     const transferAmountBI = BI.from(amount).mul(10 ** 8);
     console.log(transferAmountBI.toString(), "transferAmountBI");

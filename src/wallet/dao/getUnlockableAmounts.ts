@@ -1,10 +1,8 @@
-import { log } from 'console';
 import { Cell, Script, Header, TransactionWithStatus } from "@ckb-lumos/base";
 import { since } from "@ckb-lumos/lumos";
 import { dao } from "@ckb-lumos/common-scripts";
 import { DAOUnlockableAmount } from "../../type";
 import { DEPOSITDAODATA, HTTPRPC } from "../../config";
-import owership from '../../owership';
 
 export enum DAOCellType {
   DEPOSIT = "deposit",
@@ -22,7 +20,7 @@ const blockTime = 8.02;
 export async function getDAOUnlockableAmounts(): Promise<
   DAOUnlockableAmount[]
 > {
-  const res = await owership.getLiveCells();
+  // const res = await owership.getLiveCells();
   // @ts-ignore
   return getUnlockableAmountsFromCells(res.objects);
 }
@@ -158,10 +156,7 @@ export async function findCorrectInputFromWithdrawCell(
   let index: string = "";
   let txHash: string = "";
   for (let i = 0; i < transaction.transaction.inputs.length && !index; i += 1) {
-
-
     const prevOut = transaction.transaction.inputs[i].previousOutput;
-
     const possibleTx = await getTransactionFromHash(prevOut.txHash);
 
     const output = possibleTx.transaction.outputs[parseInt(prevOut.index, 16)];
@@ -231,11 +226,8 @@ export async function getUnlockableAmountsFromCells(
   cells: Cell[]
 ): Promise<DAOUnlockableAmount[]> {
 
-  // console.log(cells, "cells__-");
-
   const unlockableAmounts: DAOUnlockableAmount[] = [];
   const filtCells = await filterDAOCells(cells);
-  // console.log(filtCells, "filtCells_____");
 
   const currentBlockHeader = await getCurrentBlockHeader();
   const currentEpoch = since.parseEpoch(currentBlockHeader.epoch);

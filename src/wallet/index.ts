@@ -1,5 +1,4 @@
 import { BI, helpers, Script } from "@ckb-lumos/lumos";
-import { signTransaction } from "./signTransaction";
 import { sendTransaction } from "./sendTransaction";
 import {
   deposit,
@@ -7,8 +6,6 @@ import {
   withdrawOrUnlock
 } from "./dao";
 
-import { ScriptObject } from "../type";
-import owership from "../owership";
 import nexus from '../nexus';
 import { RPC_NETWORK } from '../config';
 
@@ -17,7 +14,6 @@ async function capacityOf(): Promise<BI> {
   const nexusWallet = await nexus.connect();
   const cells = await nexusWallet.fullOwnership.getLiveCells({});
   const offChainLocks = await nexusWallet.fullOwnership.getOffChainLocks({})
-
 
   // let cells = await owership.getLiveCells();
   for (const cell of cells.objects) {
@@ -48,7 +44,6 @@ function getAddress(script: Script) {
 }
 
 export {
-  signTransaction,
   capacityOf,
   sendTransaction,
   deposit,

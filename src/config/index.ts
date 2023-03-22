@@ -11,9 +11,6 @@ const BROWSERURL: BrowserUrl = {
   mian: "https://explorer.nervos.org"
 };
 
-let privateKey = "0xc05124858c866687526b67340fbd9527c71cbf3092191af406b6d9ae81d5a2aa"
-let address = "ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqvrd45dq67g73cj7a6t5vj4yezd768x37qnefkjm"
-
 // const TEST_CKB_RPC_URL = "http://localhost:8114";
 // const TEST_CKB_INDEXER_URL = "http://localhost:8114";
 const TEST_CKB_RPC_URL = "https://testnet.ckb.dev/rpc";
@@ -48,6 +45,4 @@ export {
   HTTPRPC,
   BROWSERURL,
   DAOTYPE,
-  privateKey,
-  address
 };

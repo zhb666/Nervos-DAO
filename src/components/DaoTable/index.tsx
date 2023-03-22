@@ -3,7 +3,7 @@ import type { ColumnsType } from 'antd/lib/table';
 import { Space, Table, Button, notification, Spin } from 'antd';
 import { DaoDataObject } from "../../type"
 import { cutValue, formatDate } from "../../utils/index"
-import { address, BROWSERURL, HTTPRPC, privateKey } from "../../config"
+import { BROWSERURL, HTTPRPC } from "../../config"
 import { UserStore } from "../../stores";
 import { getUnlockableAmountsFromCells, withdrawOrUnlock } from "../../wallet"
 

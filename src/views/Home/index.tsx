@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { BI, Script } from '@ckb-lumos/lumos';
 import { Button, Input, notification } from 'antd';
-import { capacityOf, deposit as daoDeposit, getAddress } from "../../wallet";
+import { deposit as daoDeposit, getAddress } from "../../wallet";
 
 import "./index.css";
 import { cutValue } from '../../utils';
-import { address, DAOCELLSIZE, privateKey, BROWSERURL } from '../../config';
+import { DAOCELLSIZE, BROWSERURL } from '../../config';
 import { UserStore } from "../../stores";
 import { minus } from '../../utils/bigNumber';
 import Table from '../../components/DaoTable'
@@ -15,7 +15,6 @@ let timer: any
 const Home: React.FC = () => {
     const UserStoreHox = UserStore();
     const { connectWallet, addWalletList, changeBalance } = UserStoreHox;
-    const [privKey, setPrivKey] = useState(privateKey);
     const [fromAddr, setFromAddr] = useState("");
     const [fromLock, setFromLock] = useState<Script>();
     const [balance, setBalance] = useState("");
@@ -53,14 +52,10 @@ const Home: React.FC = () => {
     }
 
     const updateFromInfo = async () => {
-        // const capacity = await capacityOf();
-        // setBalance(capacity.toString());
-
         let balance = BI.from(0);
         const nexusWallet = await nexus.connect();
         const cells = await nexusWallet.fullOwnership.getLiveCells({});
         const offChainLocks = await nexusWallet.fullOwnership.getOffChainLocks({})
-
 
         // let cells = await owership.getLiveCells();
         for (const cell of cells.objects) {
