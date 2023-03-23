@@ -4,10 +4,9 @@ import { Button, Input, notification } from 'antd';
 import { deposit as daoDeposit, getAddress } from "../../wallet";
 
 import "./index.css";
-import { cutValue } from '../../utils';
+import { cutValue, shannonToCKBFormatter } from '../../utils';
 import { DAOCELLSIZE, BROWSERURL } from '../../config';
 import { UserStore } from "../../stores";
-import { minus } from '../../utils/bigNumber';
 import Table from '../../components/DaoTable'
 import nexus from '../../nexus';
 let timer: any
@@ -84,10 +83,7 @@ const Home: React.FC = () => {
         <div className='mian'>
             <h3>Account</h3>
             <ul className='address'>
-                {/* <li>Address :  {connectWallet ? cutValue(fromAddr, 20, 20) : "Please connect Nexus Wallet"}</li> */}
-                {/* <li>Address :  {connectWallet ? getAddress(fromLock) : "Please connect Nexus Wallet"}</li> */}
-                <li>Address :  {connectWallet ? "我的钱包" : "Please connect Nexus Wallet"}</li>
-                <li>Total CKB : {connectWallet ? Number(balance) / 100000000 : "Please connect Nexus Wallet"}</li>
+                <li>Total CKB : {connectWallet ? shannonToCKBFormatter(balance, false, '') : "Please connect Nexus Wallet"}</li>
             </ul>
             <h3 className='h3'>Amount </h3>
             <Input
@@ -112,7 +108,6 @@ const Home: React.FC = () => {
             }
 
             {txHash ? <p className='txHash'>Transaction Hash : <a target="_blank" href={`${BROWSERURL.test}/transaction/${txHash}`}>{txHash}</a></p> : null}
-
 
             <div className="Table">
                 <Table item={txHash} off={off} />
