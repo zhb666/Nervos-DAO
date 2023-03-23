@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { BI, Script } from '@ckb-lumos/lumos';
+import { BI, Cell, Script } from '@ckb-lumos/lumos';
 import { Button, Input, notification } from 'antd';
 import { deposit as daoDeposit, getAddress } from "../../wallet";
-
-import "./index.css";
+import { useQuery } from '@tanstack/react-query'
 import { cutValue, shannonToCKBFormatter } from '../../utils';
 import { DAOCELLSIZE, BROWSERURL } from '../../config';
 import { UserStore } from "../../stores";
 import Table from '../../components/DaoTable'
 import nexus from '../../nexus';
-let timer: any
+import "./index.css";
+
+const DEFAULT_NEXUS_PAGE_SIZE = 20;
 
 const Home: React.FC = () => {
     const UserStoreHox = UserStore();
     const { connectWallet, addWalletList, changeBalance } = UserStoreHox;
-    const [fromAddr, setFromAddr] = useState("");
-    const [fromLock, setFromLock] = useState<Script>();
     const [balance, setBalance] = useState("");
     const [amount, setAmount] = useState<any>("");
     const [txHash, setTxHash] = useState<any>("");
@@ -47,37 +46,31 @@ const Home: React.FC = () => {
         setLoading(false)
         setOff(false)
         setTxHash(txhash)
-        console.log(txhash);
     }
 
     const updateFromInfo = async () => {
+        let fullCells: Cell[] = [];
         let balance = BI.from(0);
         const nexusWallet = await nexus.connect();
-        const cells = await nexusWallet.fullOwnership.getLiveCells({});
-        const offChainLocks = await nexusWallet.fullOwnership.getOffChainLocks({})
+        let liveCellsResult = await nexusWallet.fullOwnership.getLiveCells({});
+        fullCells.push(...liveCellsResult.objects);
 
-        // let cells = await owership.getLiveCells();
-        for (const cell of cells.objects) {
+        while (liveCellsResult.objects.length === DEFAULT_NEXUS_PAGE_SIZE) {
+            liveCellsResult = await nexusWallet.fullOwnership.getLiveCells({
+                cursor: liveCellsResult.cursor,
+            });
+            fullCells.push(...liveCellsResult.objects);
+        }
+
+        for (const cell of liveCellsResult.objects) {
             balance = balance.add(cell.cellOutput.capacity);
         }
-        // return balance;
         setBalance(balance.toString());
-        changeBalance(balance.toString())
-        setFromLock(offChainLocks[0])
-        setFromAddr(getAddress(offChainLocks[0]))
     };
 
-    useEffect(() => {
-        if (connectWallet) {
-            timer = setInterval(() => {
-                updateFromInfo();
-            }, 2000)
-            updateFromInfo();
-        }
-        return () => {
-            clearInterval(timer)
-        }
-    }, [connectWallet]);
+    const objects = useQuery(["balance"], () => updateFromInfo(), {
+        refetchInterval: 5000,
+    })
 
     return (
         <div className='mian'>

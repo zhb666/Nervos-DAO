@@ -206,8 +206,6 @@ const TransactionsTable: React.FC<Props> = ({
 		setTableData(res.reverse());
 	};
 
-
-
 	useEffect(() => {
 		if (lastCursor) {
 			clearInterval(timercCursor)

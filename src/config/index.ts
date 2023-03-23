@@ -26,6 +26,7 @@ const RPC_NETWORK = AGGRON4;
 const DAOCELLSIZE = BigInt(102 * 10 ** 8);
 const TRANSFERCELLSIZE = BigInt(61 * 10 ** 8);
 const DEPOSITDAODATA = "0x0000000000000000";
+
 const DAOTYPE: Script = {
   "codeHash": "0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e",
   "args": "0x",
