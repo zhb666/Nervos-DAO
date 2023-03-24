@@ -2,7 +2,7 @@ import { Cell, Script, Header, TransactionWithStatus } from "@ckb-lumos/base";
 import { since } from "@ckb-lumos/lumos";
 import { dao } from "@ckb-lumos/common-scripts";
 import { DAOUnlockableAmount } from "../../type";
-import { DEPOSITDAODATA, HTTPRPC } from "../../config";
+import { DAOTYPE, DEPOSITDAODATA, HTTPRPC } from "../../config";
 
 export enum DAOCellType {
   DEPOSIT = "deposit",
@@ -20,7 +20,6 @@ const blockTime = 8.02;
 export async function getDAOUnlockableAmounts(): Promise<
   DAOUnlockableAmount[]
 > {
-  // const res = await owership.getLiveCells();
   // @ts-ignore
   return getUnlockableAmountsFromCells(res.objects);
 }
@@ -73,12 +72,7 @@ function isCellDAO(cell: Cell): boolean {
 
 function getDAOScript(): Script {
   // const daoConfig = getConfig().SCRIPTS.DAO;
-  return {
-    codeHash:
-      "0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e",
-    hashType: "type",
-    args: "0x"
-  };
+  return DAOTYPE
 }
 
 async function getDepositCellMaximumWithdraw(

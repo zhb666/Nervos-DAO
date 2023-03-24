@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Input } from 'antd';
 import { UserStore } from "../../stores";
-import { cutValue } from '../../utils';
 import nexus from "../../nexus"
 
 import "./index.css";
@@ -27,7 +26,6 @@ const Header: React.FC = () => {
         <div className='Header'>
             Nervos-Dao
             <Button type="primary" className='connectWallet' onClick={connectWalletFun}>
-                {/* {connectWallet ? cutValue(address, 8, 8) : "ConnectWallet"} */}
                 {connectWallet ? "我的钱包" : "ConnectWallet"}
             </Button>
         </div>

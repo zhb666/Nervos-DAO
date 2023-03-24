@@ -13,8 +13,6 @@ async function capacityOf(): Promise<BI> {
   let balance = BI.from(0);
   const nexusWallet = await nexus.connect();
   const cells = await nexusWallet.fullOwnership.getLiveCells({});
-  const offChainLocks = await nexusWallet.fullOwnership.getOffChainLocks({})
-
   // let cells = await owership.getLiveCells();
   for (const cell of cells.objects) {
     balance = balance.add(cell.cellOutput.capacity);

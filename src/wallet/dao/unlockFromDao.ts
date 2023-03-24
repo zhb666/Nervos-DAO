@@ -81,11 +81,10 @@ async function withdrawOrUnlockFromCell(
   feeRate: FeeRate = FeeRate.NORMAL
 ): Promise<string> {
   if (!isCellDeposit(cell)) {
-    // TODO 
     // Check real unlockability
-    // if (!(await isCellUnlockable(cell))) {
-    //   throw new Error("Cell can not yet be unlocked.");
-    // }
+    if (!(await isCellUnlockable(cell))) {
+      throw new Error("Cell can not yet be unlocked.");
+    }
     return unlock(
       cell,
       feeRate
@@ -239,7 +238,6 @@ async function unlock(
 
   let txSkeleton = getTransactionSkeleton(offChainLocks[0]);
 
-  // TODO: make me configurable
   const onChainScripts = await loadScriptDeps({ nodeUrl: TEST_CKB_RPC_URL })
   txSkeleton = await dao.unlock(
     txSkeleton,
@@ -325,38 +323,6 @@ async function getDepositCellFromWithdrawCell(
     blockHash: depositBlockHeader.hash,
     blockNumber: depositBlockHeader.number
   };
-}
-
-function extractPrivateKeys(
-  txSkeleton: TransactionSkeletonType,
-  fromAddresses: string[],
-  privateKeys: string[]
-): string[] {
-  const signingPrivKeys: string[] = [];
-
-  for (let i = 0; i < fromAddresses.length; i += 1) {
-    if (
-      getScriptFirstIndex(txSkeleton, getLockFromAddress(fromAddresses[i])) !==
-      -1
-    ) {
-      signingPrivKeys.push(privateKeys[i]);
-    }
-  }
-
-  return signingPrivKeys;
-}
-
-function getScriptFirstIndex(
-  txSkeleton: TransactionSkeletonType,
-  fromScript: Script
-): number {
-  return txSkeleton
-    .get("inputs")
-    .findIndex((input: { cellOutput: { lock: any; }; }) =>
-      new ScriptValue(input.cellOutput.lock, { validate: false }).equals(
-        new ScriptValue(fromScript, { validate: false })
-      )
-    );
 }
 
 // Gets the locks script from an address

@@ -1,20 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { BI, Cell, Script } from '@ckb-lumos/lumos';
+import { BI, Cell } from '@ckb-lumos/lumos';
 import { Button, Input, notification } from 'antd';
-import { deposit as daoDeposit, getAddress } from "../../wallet";
+import { deposit as daoDeposit } from "../../wallet";
 import { useQuery } from '@tanstack/react-query'
-import { cutValue, shannonToCKBFormatter } from '../../utils';
+import { shannonToCKBFormatter } from '../../utils';
 import { DAOCELLSIZE, BROWSERURL } from '../../config';
 import { UserStore } from "../../stores";
 import Table from '../../components/DaoTable'
 import nexus from '../../nexus';
 import "./index.css";
 
-const DEFAULT_NEXUS_PAGE_SIZE = 20;
-
 const Home: React.FC = () => {
     const UserStoreHox = UserStore();
-    const { connectWallet, addWalletList, changeBalance } = UserStoreHox;
+    const { connectWallet, addWalletList } = UserStoreHox;
     const [balance, setBalance] = useState("");
     const [amount, setAmount] = useState<any>("");
     const [txHash, setTxHash] = useState<any>("");
@@ -55,20 +53,20 @@ const Home: React.FC = () => {
         let liveCellsResult = await nexusWallet.fullOwnership.getLiveCells({});
         fullCells.push(...liveCellsResult.objects);
 
-        while (liveCellsResult.objects.length === DEFAULT_NEXUS_PAGE_SIZE) {
+        while (liveCellsResult.objects.length === 20) {
             liveCellsResult = await nexusWallet.fullOwnership.getLiveCells({
                 cursor: liveCellsResult.cursor,
             });
             fullCells.push(...liveCellsResult.objects);
         }
 
-        for (const cell of liveCellsResult.objects) {
+        for (const cell of fullCells) {
             balance = balance.add(cell.cellOutput.capacity);
         }
         setBalance(balance.toString());
     };
 
-    const objects = useQuery(["balance"], () => updateFromInfo(), {
+    const objects = useQuery(["data"], () => updateFromInfo(), {
         refetchInterval: 5000,
     })
 

@@ -7,9 +7,7 @@ const nexus = {
     async connect() {
         if (window.ckb) {
             // const isEnabled = await window.ckb.isEnabled()
-            // console.log(isEnabled, "isEnabled");
             try {
-                // if(isEnabled){}
                 const ckbProvider = await window.ckb.enable();
                 if (!ckbProvider) {
                     alert("Need to download nexus wallet");
