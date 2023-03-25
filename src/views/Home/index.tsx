@@ -68,9 +68,8 @@ const Home: React.FC = () => {
     };
 
 
-
     const data = useQuery(["data"], () => updateFromInfo(), {
-        refetchInterval: 5000,
+        refetchInterval: 2000,
     })
 
     return (

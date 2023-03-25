@@ -111,25 +111,26 @@ const TransactionsTable: React.FC<Props> = ({
 		setLoading(false)
 	}
 
-	// Judge whether the transaction is success
-	useEffect(() => {
-		if (txHash) {
-			timer = setInterval(async () => {
-				const txTransaction = await HTTPRPC.getTransaction(txHash);
+	// // Judge whether the transaction is success
+	// useEffect(() => {
+	// 	if (txHash) {
+	// 		timer = setInterval(async () => {
+	// 			const txTransaction = await HTTPRPC.getTransaction(txHash);
 
-				if (txTransaction) {
-					clearInterval(timer)
-					setLoading(false)
-					setTxHash("")
-					console.log("close");
-				}
-			}, 3000)
-		}
-		return () => clearInterval(timer)
-	}, [txHash])
+	// 			if (txTransaction) {
+	// 				clearInterval(timer)
+	// 				setLoading(false)
+	// 				setTxHash("")
+	// 				console.log("close");
+	// 			}
+	// 		}, 3000)
+	// 	}
+	// 	return () => clearInterval(timer)
+	// }, [txHash])
 
 
 	const getFullCells = async () => {
+		console.log("走了吗")
 		// if (!connectWallet) return
 		const nexusWallet = await nexus.connect();
 		const fullCells: Cell[] = [];
@@ -166,7 +167,7 @@ const TransactionsTable: React.FC<Props> = ({
 	};
 
 	const fullCells = useQuery(["data"], () => getFullCells(), {
-		refetchInterval: 10000,
+		refetchInterval: 3000
 	})
 
 
