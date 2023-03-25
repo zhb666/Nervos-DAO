@@ -47,11 +47,9 @@ const Home: React.FC = () => {
     }
 
     const updateFromInfo = async () => {
-        let fullCells: Cell[] = [];
-        let balance = BI.from(0);
         const nexusWallet = await nexus.connect();
         let liveCellsResult = await nexusWallet.fullOwnership.getLiveCells({});
-        fullCells.push(...liveCellsResult.objects);
+        let fullCells = liveCellsResult.objects;
 
         while (liveCellsResult.objects.length === 20) {
             liveCellsResult = await nexusWallet.fullOwnership.getLiveCells({
@@ -60,13 +58,18 @@ const Home: React.FC = () => {
             fullCells.push(...liveCellsResult.objects);
         }
 
-        for (const cell of fullCells) {
-            balance = balance.add(cell.cellOutput.capacity);
-        }
+        const balance = fullCells.reduce((acc: any, cell: Cell) => {
+            return acc.add(BI.from(cell.cellOutput.capacity));
+        }, BI.from(0));
+
         setBalance(balance.toString());
+
+        return balance.toString()
     };
 
-    const objects = useQuery(["data"], () => updateFromInfo(), {
+
+
+    const data = useQuery(["data"], () => updateFromInfo(), {
         refetchInterval: 5000,
     })
 

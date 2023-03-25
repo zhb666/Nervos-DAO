@@ -36,7 +36,6 @@ const TransactionsTable: React.FC<Props> = ({
 	const { connectWallet } = UserStoreHox;
 	const [tableData, setTableData] = useState<DaoDataObject[]>([])
 	const [loading, setLoading] = useState(false);
-	const [fullCells, setFullCells] = useState<any>([]);
 	const [txHash, setTxHash] = useState<string>("");//pending = false  success = true
 
 	const columns: ColumnsType<DaoDataObject> = [
@@ -120,7 +119,6 @@ const TransactionsTable: React.FC<Props> = ({
 
 				if (txTransaction) {
 					clearInterval(timer)
-					getTableData();
 					setLoading(false)
 					setTxHash("")
 					console.log("close");
@@ -134,20 +132,26 @@ const TransactionsTable: React.FC<Props> = ({
 	const getFullCells = async () => {
 		// if (!connectWallet) return
 		const nexusWallet = await nexus.connect();
-		let fullCells: Cell[] = [];
-		let liveCellsResult = await nexusWallet.fullOwnership.getLiveCells({});
-		fullCells.push(...liveCellsResult.objects);
+		const fullCells: Cell[] = [];
 
-		while (liveCellsResult.objects.length === 20) {
-			liveCellsResult = await nexusWallet.fullOwnership.getLiveCells({
-				cursor: liveCellsResult.cursor,
-			});
-			fullCells.push(...liveCellsResult.objects);
-		}
-		setFullCells(fullCells)
+		const fetchLiveCells = async (cursor?: string) => {
+			const result = await nexusWallet.fullOwnership.getLiveCells({ cursor });
+			fullCells.push(...result.objects);
+			return result;
+		};
+
+		const firstResult = await fetchLiveCells();
+		const cursorList = Array.from({ length: Math.ceil(firstResult.total / firstResult.limit) - 1 }, (_, i) => firstResult.objects[19 + i * 20]?.id);
+
+		await Promise.all(cursorList.map((cursor) => fetchLiveCells(cursor)));
+
+		getTableData(fullCells)
+
+		return fullCells
 	}
 
-	const getTableData = async () => {
+
+	const getTableData = async (fullCells: Cell[]) => {
 		const res = await getUnlockableAmountsFromCells(fullCells)
 		let DaoBalance = 0
 		let Income = 0
@@ -161,15 +165,10 @@ const TransactionsTable: React.FC<Props> = ({
 		setTableData(res.reverse());
 	};
 
-	useEffect(() => {
-		if (fullCells) {
-			getTableData()
-		}
-	}, [fullCells])
-
-	const objects = useQuery(["data"], () => getFullCells(), {
+	const fullCells = useQuery(["data"], () => getFullCells(), {
 		refetchInterval: 10000,
 	})
+
 
 	return (
 		<div className='transactionsTable'>
