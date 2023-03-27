@@ -211,8 +211,6 @@ async function unlock(
   const fullCells = (await nexusWallet.fullOwnership.getLiveCells({})).objects;
 
   const changeLock: Script = offChainLocks[0];
-  console.log(changeLock, "changeLock");
-
   const depositCell = await getDepositCellFromWithdrawCell(withdrawCell);
 
   const address = getAddress(offChainLocks[0])
