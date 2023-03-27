@@ -11,10 +11,10 @@ const BROWSERURL: BrowserUrl = {
   mian: "https://explorer.nervos.org"
 };
 
-// const TEST_CKB_RPC_URL = "http://localhost:8114";
-// const TEST_CKB_INDEXER_URL = "http://localhost:8114";
-const TEST_CKB_RPC_URL = "https://testnet.ckb.dev/rpc";
-const TEST_CKB_INDEXER_URL = "https://testnet.ckb.dev/indexer";
+const NODEURL = process.env.REACT_APP_NODE_URL || 'https://testnet.ckb.dev';
+
+const TEST_CKB_RPC_URL = `${NODEURL}/rpc`;
+const TEST_CKB_INDEXER_URL = `${NODEURL}/indexer`;
 
 const HTTPRPC = new RPC(TEST_CKB_RPC_URL);
 const TEST_INDEXER = new Indexer(TEST_CKB_INDEXER_URL, TEST_CKB_RPC_URL);
@@ -47,4 +47,5 @@ export {
   HTTPRPC,
   BROWSERURL,
   DAOTYPE,
+  NODEURL
 };

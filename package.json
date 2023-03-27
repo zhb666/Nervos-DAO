@@ -22,6 +22,9 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start:dev": "REACT_APP_NODE_URL=http://localhost:8114 npm start",
+    "start:test": "REACT_APP_NODE_URL=https://testnet.ckb.dev npm start",
+    "start:main": "REACT_APP_NODE_URL=http://mainnet.com npm start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
