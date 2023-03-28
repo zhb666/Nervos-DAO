@@ -324,7 +324,7 @@ async function getDepositCellFromWithdrawCell(
 }
 
 // Gets the locks script from an address
-function getLockFromAddress(address: string): Script {
+export function getLockFromAddress(address: string): Script {
   return helpers.parseAddress(address, { config: RPC_NETWORK });
 }
 

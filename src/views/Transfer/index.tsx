@@ -1,33 +1,51 @@
 import React, { useEffect, useState } from "react";
-import { BI, Cell } from '@ckb-lumos/lumos';
+import { BI, Cell, helpers, Script } from '@ckb-lumos/lumos';
 import { Button, Input, notification } from 'antd';
-import { deposit as daoDeposit } from "../../wallet";
+import { transfer } from "../../wallet";
 import { useQuery } from '@tanstack/react-query'
 import { shannonToCKBFormatter } from '../../utils';
-import { DAOCELLSIZE, BROWSERURL } from '../../config';
+import { BROWSERURL, RPC_NETWORK } from '../../config';
 import { UserStore } from "../../stores";
 import Table from '../../components/DaoTable'
 import nexus from '../../nexus';
 import "./index.css";
+
+const minimumCkb = 61;
 
 const Transfer: React.FC = () => {
     const UserStoreHox = UserStore();
     const { connectWallet, addWalletList } = UserStoreHox;
     const [balance, setBalance] = useState("");
     const [amount, setAmount] = useState<any>("");
+    const [toAddr, setToAddr] = useState("");
+    const [transferToLock, setTransferToLock] = useState<Script>();
     const [txHash, setTxHash] = useState<any>("");
     const [loading, setLoading] = useState<boolean>(false);
-    const [off, setOff] = useState(true);//pending = false  success = true
 
-    const Deposit = async () => {
-
+    const send = async () => {
         let msg = ""
-        if (!amount) {
-            msg = "Deposit ckb cannot be 0"
+
+        try {
+            if (!helpers.addressToScript(toAddr, { config: RPC_NETWORK })) return
+        } catch {
+            msg = "Address error"
+            notification["error"]({
+                message: 'error',
+                description: msg
+            });
+            return
         }
 
-        if (BigInt(amount * 10 ** 8) < DAOCELLSIZE) {
-            msg = "Minimum cannot be less than 102 CKB"
+        if (!toAddr) {
+            msg = "The receiving address is empty"
+        }
+
+        if (!amount) {
+            msg = "Send ckb cannot be 0"
+        }
+
+        if (amount < minimumCkb) {
+            msg = `Please enter the amount at least ${minimumCkb} CKB`
         }
 
         if (msg) {
@@ -40,11 +58,14 @@ const Transfer: React.FC = () => {
 
         setLoading(true)
 
-        const txhash = await daoDeposit(BigInt(amount), 1000);
-        setLoading(false)
-        setOff(false)
+        const txhash = await transfer(amount, toAddr,);
+        //   openNotificationWithIcon("success")
         setTxHash(txhash)
+        setLoading(false)
     }
+
+
+
 
     const updateFromInfo = async () => {
         const nexusWallet = await nexus.connect();
@@ -76,15 +97,27 @@ const Transfer: React.FC = () => {
         <div className='mian'>
             <h3>Account</h3>
             <ul className='address'>
-                <li>11111 CKB : {connectWallet ? shannonToCKBFormatter(balance, false, '') : "Please connect Nexus Wallet"}</li>
+                <li>Total CKB : {connectWallet ? shannonToCKBFormatter(balance, false, '') : "Please connect Nexus Wallet"}</li>
             </ul>
+            <h3>Send to Address</h3>
+
+            <Input
+                id="to-address"
+                type="text"
+                disabled={!connectWallet}
+                placeholder='Please enter receiving address'
+                value={toAddr}
+                onChange={(e) => setToAddr(e.target.value || '')}
+            />
+            <br />
             <h3 className='h3'>Amount </h3>
+
             <Input
                 id="amount"
                 type="text"
                 autoComplete="off"
                 disabled={!connectWallet}
-                placeholder='Please enter the amount at least 102 CKB'
+                placeholder={`Please enter the amount at least ${minimumCkb} CKB`}
                 value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
             />
@@ -95,16 +128,16 @@ const Transfer: React.FC = () => {
                         addWalletList(true)
                     }}>
                         Connect Wallet
-                    </Button> : <Button className='sendButton' disabled={loading} type="primary" block onClick={Deposit}>
-                        Deposit
+                    </Button> : <Button className='sendButton' disabled={loading} type="primary" block onClick={send}>
+                        Transfer
                     </Button>
             }
 
             {txHash ? <p className='txHash'>Transaction Hash : <a target="_blank" href={`${BROWSERURL.test}/transaction/${txHash}`}>{txHash}</a></p> : null}
 
-            <div className="Table">
+            {/* <div className="Table">
                 <Table item={txHash} off={off} />
-            </div>
+            </div> */}
         </div>
     )
 }

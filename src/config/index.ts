@@ -26,6 +26,7 @@ const RPC_NETWORK = AGGRON4;
 const DAOCELLSIZE = BigInt(102 * 10 ** 8);
 const TRANSFERCELLSIZE = BigInt(61 * 10 ** 8);
 const DEPOSITDAODATA = "0x0000000000000000";
+const DEFAULTTXFEE = 100000;
 
 // https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#example
 const DAOTYPE: Script = {
@@ -47,5 +48,6 @@ export {
   HTTPRPC,
   BROWSERURL,
   DAOTYPE,
-  NODEURL
+  NODEURL,
+  DEFAULTTXFEE
 };

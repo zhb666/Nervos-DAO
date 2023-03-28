@@ -8,6 +8,7 @@ import {
 
 import nexus from '../nexus';
 import { RPC_NETWORK } from '../config';
+import { transfer } from './transfer';
 
 async function capacityOf(): Promise<BI> {
   let balance = BI.from(0);
@@ -48,5 +49,6 @@ export {
   cellOccupiedBytes,
   getUnlockableAmountsFromCells,
   withdrawOrUnlock,
-  getAddress
+  getAddress,
+  transfer
 };

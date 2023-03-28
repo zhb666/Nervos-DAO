@@ -13,6 +13,10 @@
     margin-left: 0;
 }
 
+#to-address {
+    margin-bottom: 20px;
+}
+
 li {
     font-size: 18px;
 }
