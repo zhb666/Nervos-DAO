@@ -1,16 +1,70 @@
 import React, { useEffect, useState } from "react";
 import { BI, Cell, helpers, Script } from '@ckb-lumos/lumos';
-import { Button, Input, notification } from 'antd';
+import { Button, Input, notification, Space, Spin } from 'antd';
 import { transfer } from "../../wallet";
 import { useQuery } from '@tanstack/react-query'
-import { shannonToCKBFormatter } from '../../utils';
+import { cutValue, formatDate, shannonToCKBFormatter } from '../../utils';
 import { BROWSERURL, RPC_NETWORK } from '../../config';
 import { UserStore } from "../../stores";
-import Table from '../../components/DaoTable'
 import nexus from '../../nexus';
 import "./index.css";
+import Table, { ColumnsType } from 'antd/lib/table';
 
 const minimumCkb = 61;
+
+declare const window: {
+    localStorage: {
+        getItem: Function;
+        setItem: Function;
+    };
+};
+
+export interface TransferList {
+    amount: any;
+    timestamp: number;
+    hash: string;
+    address: string;
+}
+
+let localTransferList = JSON.parse(window.localStorage.getItem('localTransferList')) || []
+
+
+const columns: ColumnsType<TransferList> = [
+    {
+        title: 'Date',
+        dataIndex: 'timestamp',
+        key: 'timestamp',
+        render: (_, record) => (
+            <Space size="middle">
+                {formatDate(record.timestamp)}
+            </Space>
+        ),
+    },
+    {
+        title: 'Transfer Address',
+        dataIndex: 'address',
+        key: 'address',
+        render: (_, record) => (
+            <Space size="middle">
+                <a>{cutValue(record.address, 8, 8)}</a>
+            </Space>
+        ),
+    },
+    {
+        title: 'Amount',
+        dataIndex: 'amount',
+        key: 'amount',
+    },
+    {
+        title: 'View Transaction',
+        key: 'tx_index',
+        render: (_, record) => (
+            <Space size="middle">
+                <a>{cutValue(record.hash, 8, 8)}</a>
+            </Space>
+        ),
+    }
+];
 
 const Transfer: React.FC = () => {
     const UserStoreHox = UserStore();
@@ -18,9 +72,9 @@ const Transfer: React.FC = () => {
     const [balance, setBalance] = useState("");
     const [amount, setAmount] = useState<any>("");
     const [toAddr, setToAddr] = useState("");
-    const [transferToLock, setTransferToLock] = useState<Script>();
     const [txHash, setTxHash] = useState<any>("");
     const [loading, setLoading] = useState<boolean>(false);
+    const [transferList, setTransferList] = useState<TransferList[]>(localTransferList)
 
     const send = async () => {
         let msg = ""
@@ -59,13 +113,24 @@ const Transfer: React.FC = () => {
         setLoading(true)
 
         const txhash = await transfer(amount, toAddr,);
-        //   openNotificationWithIcon("success")
+        notification["success"]({
+            message: 'success',
+        });
         setTxHash(txhash)
         setLoading(false)
+
+        const list = [{
+            address: toAddr,
+            timestamp: Date.now(),
+            amount: amount + " CKB",
+            hash: txhash
+        }, ...transferList]
+
+        setTransferList(list)
+
+        window.localStorage.setItem("localTransferList", JSON.stringify(list))
+        updateFromInfo();
     }
-
-
-
 
     const updateFromInfo = async () => {
         const nexusWallet = await nexus.connect();
@@ -135,9 +200,10 @@ const Transfer: React.FC = () => {
 
             {txHash ? <p className='txHash'>Transaction Hash : <a target="_blank" href={`${BROWSERURL.test}/transaction/${txHash}`}>{txHash}</a></p> : null}
 
-            {/* <div className="Table">
-                <Table item={txHash} off={off} />
-            </div> */}
+            <Spin spinning={loading}>
+                <Table className='table' rowKey={(record => record.hash)}
+                    columns={columns} dataSource={transferList} />
+            </Spin>
         </div>
     )
 }

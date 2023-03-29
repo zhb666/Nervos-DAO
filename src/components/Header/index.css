@@ -16,3 +16,23 @@
     margin-top: 9px;
     cursor: pointer;
 }
+
+.logo {
+    float: left;
+}
+
+.link {
+    width: 300px;
+    float: left;
+}
+
+.link li {
+    color: #fff;
+    float: left;
+    width: 100px;
+    text-align: center;
+}
+
+.link li a {
+    color: #fff;
+}

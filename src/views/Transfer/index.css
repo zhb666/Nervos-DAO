@@ -40,6 +40,10 @@ input {
 
 .txHash {
     font-size: 16px;
+    margin: 20px 0;
+}
+
+.table {
     margin-top: 20px;
 }
 

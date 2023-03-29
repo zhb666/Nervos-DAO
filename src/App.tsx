@@ -13,11 +13,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="App">
-        <Header />
+
         <BrowserRouter>
+          <Header />
+
           <Routes>
             <Route path='/' element={<Home />} ></Route>
-            <Route path='/Transfer' element={<Transfer />}></Route>
+            <Route path='/transfer' element={<Transfer />}></Route>
           </Routes>
         </BrowserRouter>
       </div>

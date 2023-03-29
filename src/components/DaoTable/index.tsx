@@ -3,7 +3,7 @@ import type { ColumnsType } from 'antd/lib/table';
 import { useQuery } from '@tanstack/react-query'
 import { Space, Table, Button, notification, Spin } from 'antd';
 import { DaoDataObject } from "../../type"
-import { cutValue, formatDate } from "../../utils/index"
+import { cutValue, formatDate, shannonToCKBFormatter } from "../../utils/index"
 import { BROWSERURL, HTTPRPC } from "../../config"
 import { UserStore } from "../../stores";
 import { getUnlockableAmountsFromCells, withdrawOrUnlock } from "../../wallet"
@@ -44,7 +44,7 @@ const TransactionsTable: React.FC<Props> = ({
 			align: 'center',
 			render: (_, record) => (
 				<Space size="middle">
-					{Number(record.amount) / 100000000}
+					{shannonToCKBFormatter(Number(record.amount).toString(), false, '')}
 				</Space>
 			),
 		},
