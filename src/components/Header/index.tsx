@@ -31,6 +31,9 @@ const Header: React.FC = () => {
                 <li>
                     <Link to="/transfer">Transfer</Link>
                 </li>
+                <li>
+                    <Link to="/addressBook">Address Book</Link>
+                </li>
             </ul>
 
             <Button type="primary" className='connectWallet' onClick={connectWalletFun}>

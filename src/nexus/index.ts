@@ -21,6 +21,20 @@ const nexus = {
             // Need to download nexus wallet
             console.log("Need to download nexus wallet")
         }
+    },
+    async getLiveCells() {
+        const nexusWallet = await nexus.connect();
+        let liveCellsResult = await nexusWallet.fullOwnership.getLiveCells({});
+        let fullCells = liveCellsResult.objects;
+
+        while (liveCellsResult.objects.length === 20) {
+            liveCellsResult = await nexusWallet.fullOwnership.getLiveCells({
+                cursor: liveCellsResult.cursor,
+            });
+            fullCells.push(...liveCellsResult.objects);
+        }
+
+        return fullCells
     }
 }
 

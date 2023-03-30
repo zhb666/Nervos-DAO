@@ -22,14 +22,16 @@
 }
 
 .link {
-    width: 300px;
+    width: 400px;
     float: left;
 }
 
 .link li {
     color: #fff;
     float: left;
-    width: 100px;
+    /* width: 100px; */
+    flex: 1;
+    margin-right: 20px;
     text-align: center;
 }
 
