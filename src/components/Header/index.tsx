@@ -11,8 +11,10 @@ const Header: React.FC = () => {
     const { addWalletList, connectWallet } = UserStoreHox;
     const connectWalletFun = async () => {
         setTimeout(async () => {
-            await nexus.connect();
-            addWalletList(true)
+            const res = await nexus.connect();
+            if (res) {
+                addWalletList(true)
+            }
         }, 500)
     }
 

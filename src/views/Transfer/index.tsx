@@ -149,13 +149,17 @@ const Transfer: React.FC = () => {
         }, BI.from(0));
 
         setBalance(balance.toString());
-
         return balance.toString()
     };
 
+    // const data = useQuery(["data"], () => updateFromInfo(), {
+    // })
 
-    const data = useQuery(["data"], () => updateFromInfo(), {
-    })
+    useEffect(() => {
+        if (connectWallet) {
+            updateFromInfo()
+        }
+    }, [])
 
     return (
         <div className='mian'>
@@ -188,8 +192,13 @@ const Transfer: React.FC = () => {
             <br />
             {
                 !connectWallet ?
-                    <Button className='sendButton' type="primary" block onClick={() => {
-                        addWalletList(true)
+                    <Button className='sendButton' type="primary" block onClick={async () => {
+                        const res = await nexus.connect()
+                        if (res) {
+                            addWalletList(true)
+                        } else {
+                            alert("Need to download nexus wallet")
+                        }
                     }}>
                         Connect Wallet
                     </Button> : <Button className='sendButton' disabled={loading} type="primary" block onClick={send}>

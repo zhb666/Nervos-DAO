@@ -19,7 +19,7 @@ const nexus = {
             }
         } else {
             // Need to download nexus wallet
-            console.log("Need to download nexus wallet")
+            console.error("Need to download nexus wallet")
         }
     },
     async getLiveCells() {

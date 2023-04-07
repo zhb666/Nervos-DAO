@@ -90,8 +90,13 @@ const Home: React.FC = () => {
             <br />
             {
                 !connectWallet ?
-                    <Button className='sendButton' type="primary" block onClick={() => {
-                        addWalletList(true)
+                    <Button className='sendButton' type="primary" block onClick={async () => {
+                        const res = await nexus.connect()
+                        if (res) {
+                            addWalletList(true)
+                        } else {
+                            alert("Need to download nexus wallet")
+                        }
                     }}>
                         Connect Wallet
                     </Button> : <Button className='sendButton' disabled={loading} type="primary" block onClick={Deposit}>

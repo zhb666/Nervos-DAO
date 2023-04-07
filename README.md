@@ -1,12 +1,12 @@
 ## Nervos-DAO
 
-1.会先搭建一套Dao的页面
+1. Will first build a set of Dao pages
 
-2.验证一下window里面是否有注入的ckb对象
+2. Verify whether there is an injected ckb object in the window
 ```js
 const getCKB = () =>
   new Promise((resolve, reject) => {
-    // 页面加载完成
+    // page loaded
     window.addEventListener("load", async () => {
       if (window.ckb) {
         const CKB = new ckb();
@@ -17,7 +17,7 @@ const getCKB = () =>
         }
       }
       else {
-        alert("请安装nexus钱包")
+        alert("Please install the nexus wallet")
       }
     });
   });
@@ -27,7 +27,7 @@ export default {
 
 ```
 
-3.如果有注入就可以验证授权关联
+3.Authorization association can be verified if injected
 ```ts
 const CKB = require("../wallet/getCKB");
 
@@ -38,7 +38,7 @@ CKB.enable().then((res:CkbProvider) => {
 })}
 ```
 
-4.获取金额
+4.get the amount
 ```ts
 
 interface ScriptObject {
@@ -47,7 +47,6 @@ interface ScriptObject {
   args: string;
 }
 
-// 获取金额
 async function capacityOf(): Promise<BI> {
   let balance = BI.from(0);
 
@@ -59,7 +58,7 @@ async function capacityOf(): Promise<BI> {
   return balance;
 }
 
-// 获取未使用Script
+// Get unused script
 export async function getOffChainLocks(
   cursor?: string
 ) {
@@ -68,7 +67,7 @@ export async function getOffChainLocks(
 }
 ```
 
-5.Dao需要和插件交互的话需要调用ckb注入的对象的方法去质押然后等待返回结果，这个时候页面会有一个等待的过程。
+5. If Dao needs to interact with the plug-in, it needs to call the method of the object injected by ckb to pledge and wait for the result to be returned. At this time, the page will have a waiting process.
 ```ts
 import { sealTransaction } from "@ckb-lumos/helpers";
 import { config, commons, hd } from "@ckb-lumos/lumos";
@@ -101,7 +100,7 @@ async function deposit(
     config: RPC_NETWORK
   });
 
-  // 动态计算最小矿工费
+  // Dynamically calculate the minimum miner fee
   rawTx = await common.payFeeByFeeRate(
     tx,
     [from],
@@ -129,17 +128,17 @@ async function sendTransaction(tx: Transaction) {
 
 const txhash = await deposit(BigInt(amount * 10 ** 8),unUsedLocks);
 
-// 得到交易结果
+// get transaction result
 if (txhash) {
-    // 页面弹窗告知用户
+    // Page pop-up window informs the user
 	openNotificationWithIcon("success")
-    // 关闭等待弹窗
+    // Close the waiting popup
 	setLoading(false)
 }
 
 ```
 
-6.成功或者失败之后需要重新请求ckb注入的方法获取最新的金额，交易，然后更新页面
+6.After success or failure, you need to re-request the ckb injection method to get the latest amount, transaction, and then update the page
 
 ```js
 const balance = await capacityOf();
