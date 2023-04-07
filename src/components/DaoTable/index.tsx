@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import type { ColumnsType } from 'antd/lib/table';
-import { useQuery } from '@tanstack/react-query'
 import { Space, Table, Button, notification, Spin } from 'antd';
 import { DaoDataObject } from "../../type"
-import { cutValue, formatDate, shannonToCKBFormatter } from "../../utils/index"
-import { BROWSERURL, HTTPRPC } from "../../config"
-import { UserStore } from "../../stores";
+import { cutValue, shannonToCKBFormatter } from "../../utils/index"
+import { BROWSERURL } from "../../config"
 import { getUnlockableAmountsFromCells, withdrawOrUnlock } from "../../wallet"
 
 import './index.css';
-import nexus from '../../nexus';
 import { BI, Cell } from '@ckb-lumos/lumos';
 
 declare const window: {
@@ -21,17 +18,12 @@ declare const window: {
 };
 
 interface Props {
-	item: DaoDataObject;
-	off: boolean
+	fullCells: Cell[]
 }
 
-
 const TransactionsTable: React.FC<Props> = ({
-	item,
-	off
+	fullCells
 }) => {
-	const UserStoreHox = UserStore();
-	const { connectWallet } = UserStoreHox;
 	const [tableData, setTableData] = useState<DaoDataObject[]>([])
 	const [loading, setLoading] = useState(false);
 	const [txHash, setTxHash] = useState<string>("");//pending = false  success = true
@@ -109,29 +101,8 @@ const TransactionsTable: React.FC<Props> = ({
 		setLoading(false)
 	}
 
-	const getFullCells = async () => {
-		// if (!connectWallet) return
-		const nexusWallet = await nexus.connect();
-		const fullCells: Cell[] = [];
-
-		const fetchLiveCells = async (cursor?: string) => {
-			const result = await nexusWallet.fullOwnership.getLiveCells({ cursor });
-			fullCells.push(...result.objects);
-			return result;
-		};
-
-		const firstResult = await fetchLiveCells();
-		const cursorList = Array.from({ length: Math.ceil(firstResult.total / firstResult.limit) - 1 }, (_, i) => firstResult.objects[19 + i * 20]?.id);
-
-		await Promise.all(cursorList.map((cursor) => fetchLiveCells(cursor)));
-
-		getTableData(fullCells)
-
-		return fullCells
-	}
-
-
 	const getTableData = async (fullCells: Cell[]) => {
+		setLoading(true)
 		const res = await getUnlockableAmountsFromCells(fullCells)
 		let DaoBalance = 0
 		let Income = 0
@@ -143,11 +114,14 @@ const TransactionsTable: React.FC<Props> = ({
 		}
 
 		setTableData(res.reverse());
+		setLoading(false)
 	};
 
-	const fullCells = useQuery(["data"], () => getFullCells(), {
-		refetchInterval: 3000
-	})
+	useEffect(() => {
+		if (fullCells) {
+			getTableData(fullCells)
+		}
+	}, [fullCells])
 
 
 	return (

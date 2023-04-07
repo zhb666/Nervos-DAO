@@ -155,7 +155,6 @@ const Transfer: React.FC = () => {
 
 
     const data = useQuery(["data"], () => updateFromInfo(), {
-        refetchInterval: 2000,
     })
 
     return (

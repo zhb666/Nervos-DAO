@@ -13,11 +13,10 @@ import "./index.css";
 const Home: React.FC = () => {
     const UserStoreHox = UserStore();
     const { connectWallet, addWalletList } = UserStoreHox;
-    const [balance, setBalance] = useState("");
+    const [fullCells, setFullCells] = useState<Cell[]>([]);
     const [amount, setAmount] = useState<any>("");
     const [txHash, setTxHash] = useState<any>("");
     const [loading, setLoading] = useState<boolean>(false);
-    const [off, setOff] = useState(true);//pending = false  success = true
 
     const Deposit = async () => {
 
@@ -42,7 +41,6 @@ const Home: React.FC = () => {
 
         const txhash = await daoDeposit(BigInt(amount), 1000);
         setLoading(false)
-        setOff(false)
         setTxHash(txhash)
     }
 
@@ -58,25 +56,26 @@ const Home: React.FC = () => {
             fullCells.push(...liveCellsResult.objects);
         }
 
+        setFullCells(fullCells)
+
         const balance = fullCells.reduce((acc: any, cell: Cell) => {
             return acc.add(BI.from(cell.cellOutput.capacity));
         }, BI.from(0));
 
-        setBalance(balance.toString());
 
         return balance.toString()
     };
 
 
-    const data = useQuery(["data"], () => updateFromInfo(), {
-        refetchInterval: 2000,
+    const balance = useQuery(["data"], () => updateFromInfo(), {
+        // refetchInterval: 2000
     })
 
     return (
         <div className='mian'>
             <h3>Account</h3>
             <ul className='address'>
-                <li>Total CKB : {connectWallet ? shannonToCKBFormatter(balance, false, '') : "Please connect Nexus Wallet"}</li>
+                <li>Total CKB : {connectWallet ? shannonToCKBFormatter(balance.data && balance.data || "", false, '') : "Please connect Nexus Wallet"}</li>
             </ul>
             <h3 className='h3'>Amount </h3>
             <Input
@@ -103,7 +102,7 @@ const Home: React.FC = () => {
             {txHash ? <p className='txHash'>Transaction Hash : <a target="_blank" href={`${BROWSERURL.test}/transaction/${txHash}`}>{txHash}</a></p> : null}
 
             <div className="Table">
-                <Table item={txHash} off={off} />
+                <Table fullCells={fullCells} />
             </div>
         </div>
     )
