@@ -26,7 +26,6 @@ const TransactionsTable: React.FC<Props> = ({
 }) => {
 	const [tableData, setTableData] = useState<DaoDataObject[]>([])
 	const [loading, setLoading] = useState(false);
-	const [txHash, setTxHash] = useState<string>("");//pending = false  success = true
 
 	const columns: ColumnsType<DaoDataObject> = [
 		{
@@ -97,7 +96,6 @@ const TransactionsTable: React.FC<Props> = ({
 			});
 		};
 
-		setTxHash(hash)
 		setLoading(false)
 	}
 
