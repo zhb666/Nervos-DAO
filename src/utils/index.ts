@@ -1,4 +1,5 @@
 import { BI } from "@ckb-lumos/lumos";
+import { BROWSERURL } from '../config';
 import { TransactionObject } from "../type";
 
 export async function getCapacity(capacity: string) {
@@ -104,4 +105,10 @@ export function mapToArray(data: any) {
     array.push(data[p]);
   }
   return array;
+}
+
+
+
+export const openBrowserUrl = async (value: string, type: string) => {
+  window.open(`${BROWSERURL.test}/${type}/${value}`)
 }

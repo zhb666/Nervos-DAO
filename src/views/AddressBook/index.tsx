@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { BI, Cell, helpers, Script } from '@ckb-lumos/lumos';
 import { notification, Space, Spin } from 'antd';
 
-import { cutValue, shannonToCKBFormatter } from '../../utils';
-import { BROWSERURL, RPC_NETWORK } from '../../config';
+import { cutValue, openBrowserUrl, shannonToCKBFormatter } from '../../utils';
+import { RPC_NETWORK } from '../../config';
 import { UserStore } from "../../stores";
 import nexus from '../../nexus';
 import "./index.css";
@@ -20,7 +20,9 @@ const columns: ColumnsType<AddressList> = [
         dataIndex: 'address',
         key: 'address',
         render: (_, record) => (
-            <Space size="middle">
+            <Space size="middle" onClick={() => {
+                openBrowserUrl(record.address, "address")
+            }}>
                 <a>{cutValue(record.address, 8, 8)}</a>
             </Space>
         ),
@@ -36,6 +38,7 @@ const columns: ColumnsType<AddressList> = [
         ),
     },
 ];
+
 
 const Transfer: React.FC = () => {
     const UserStoreHox = UserStore();

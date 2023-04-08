@@ -3,7 +3,7 @@ import { BI, Cell, helpers, Script } from '@ckb-lumos/lumos';
 import { Button, Input, notification, Space, Spin } from 'antd';
 import { transfer } from "../../wallet";
 import { useQuery } from '@tanstack/react-query'
-import { cutValue, formatDate, shannonToCKBFormatter } from '../../utils';
+import { cutValue, formatDate, openBrowserUrl, shannonToCKBFormatter } from '../../utils';
 import { BROWSERURL, RPC_NETWORK } from '../../config';
 import { UserStore } from "../../stores";
 import nexus from '../../nexus';
@@ -13,6 +13,7 @@ import Table, { ColumnsType } from 'antd/lib/table';
 const minimumCkb = 61;
 
 declare const window: {
+    open: Function;
     localStorage: {
         getItem: Function;
         setItem: Function;
@@ -59,12 +60,15 @@ const columns: ColumnsType<TransferList> = [
         title: 'View Transaction',
         key: 'tx_index',
         render: (_, record) => (
-            <Space size="middle">
+            <Space size="middle" onClick={() => {
+                openBrowserUrl(record.hash, "transaction")
+            }}>
                 <a>{cutValue(record.hash, 8, 8)}</a>
             </Space>
         ),
     }
 ];
+
 
 const Transfer: React.FC = () => {
     const UserStoreHox = UserStore();
@@ -72,7 +76,7 @@ const Transfer: React.FC = () => {
     const [balance, setBalance] = useState("");
     const [amount, setAmount] = useState<any>("");
     const [toAddr, setToAddr] = useState("");
-    const [txHash, setTxHash] = useState<any>("");
+    const [txHash, setTxHash] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const [transferList, setTransferList] = useState<TransferList[]>(localTransferList)
 
@@ -133,18 +137,9 @@ const Transfer: React.FC = () => {
     }
 
     const updateFromInfo = async () => {
-        const nexusWallet = await nexus.connect();
-        let liveCellsResult = await nexusWallet.fullOwnership.getLiveCells({});
-        let fullCells = liveCellsResult.objects;
+        let liveCellsResult = await await nexus.getLiveCells();
 
-        while (liveCellsResult.objects.length === 20) {
-            liveCellsResult = await nexusWallet.fullOwnership.getLiveCells({
-                cursor: liveCellsResult.cursor,
-            });
-            fullCells.push(...liveCellsResult.objects);
-        }
-
-        const balance = fullCells.reduce((acc: any, cell: Cell) => {
+        const balance = liveCellsResult.reduce((acc: any, cell: Cell) => {
             return acc.add(BI.from(cell.cellOutput.capacity));
         }, BI.from(0));
 

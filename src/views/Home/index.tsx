@@ -45,23 +45,13 @@ const Home: React.FC = () => {
     }
 
     const updateFromInfo = async () => {
-        const nexusWallet = await nexus.connect();
-        let liveCellsResult = await nexusWallet.fullOwnership.getLiveCells({});
-        let fullCells = liveCellsResult.objects;
+        let liveCellsResult = await nexus.getLiveCells()
 
-        while (liveCellsResult.objects.length === 20) {
-            liveCellsResult = await nexusWallet.fullOwnership.getLiveCells({
-                cursor: liveCellsResult.cursor,
-            });
-            fullCells.push(...liveCellsResult.objects);
-        }
+        setFullCells(liveCellsResult)
 
-        setFullCells(fullCells)
-
-        const balance = fullCells.reduce((acc: any, cell: Cell) => {
+        const balance = liveCellsResult.reduce((acc: any, cell: Cell) => {
             return acc.add(BI.from(cell.cellOutput.capacity));
         }, BI.from(0));
-
 
         return balance.toString()
     };

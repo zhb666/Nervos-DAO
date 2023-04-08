@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import type { ColumnsType } from 'antd/lib/table';
 import { Space, Table, Button, notification, Spin } from 'antd';
 import { DaoDataObject } from "../../type"
-import { cutValue, shannonToCKBFormatter } from "../../utils/index"
-import { BROWSERURL } from "../../config"
+import { cutValue, openBrowserUrl, shannonToCKBFormatter } from "../../utils/index"
 import { getUnlockableAmountsFromCells, withdrawOrUnlock } from "../../wallet"
 
 import './index.css';
@@ -45,7 +44,7 @@ const TransactionsTable: React.FC<Props> = ({
 			align: 'center',
 			render: (_, record) => (
 				<Space size="middle" onClick={() => {
-					openBrowserUrl(record.txHash)
+					openBrowserUrl(record.txHash, "transaction")
 				}}>
 					<a>{cutValue(record.txHash, 5, 5)}</a>
 				</Space>
@@ -77,10 +76,6 @@ const TransactionsTable: React.FC<Props> = ({
 			),
 		},
 	];
-
-	const openBrowserUrl = async (txHash: string) => {
-		window.open(`${BROWSERURL.test}/transaction/${txHash}`)
-	}
 
 	const withdraw = async (daoData: DaoDataObject) => {
 
