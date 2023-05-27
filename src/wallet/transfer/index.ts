@@ -27,7 +27,6 @@ export async function transfer(tansferAmount: bigint, transferToAddress: string)
         // @ts-ignore
         (item) => item.cellOutput.type === undefined && item.data === "0x"
     );
-
     const transferToLock = await getLockFromAddress(transferToAddress)
 
     try {
