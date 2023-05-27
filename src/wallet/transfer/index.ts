@@ -22,6 +22,7 @@ export async function transfer(tansferAmount: bigint, transferToAddress: string)
     const offChainLocks = await nexusWallet.fullOwnership.getOffChainLocks({})
     let newFullCells = (await nexusWallet.fullOwnership.getLiveCells({})).objects;
 
+    
     // filter pure CKB cell
     newFullCells = newFullCells.filter(
         // @ts-ignore
